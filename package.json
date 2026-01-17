@@ -1,0 +1,27 @@
+{
+  "name": "starter-hono",
+  "type": "module",
+  "author": "Thomi Jasir <thomijasir@gmail.com>",
+  "license": "MIT",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "test": "bun test",
+    "test:coverage": "bun run test -- --coverage",
+    "test:open": "open ./coverage/index.html",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint src/ && tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.11.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.2",
+    "@hono/eslint-config": "^2.0.5",
+    "@types/bun": "latest",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.0.0",
+    "typescript-eslint": "^8.53.0"
+  }
+}

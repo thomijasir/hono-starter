@@ -1,0 +1,25 @@
+# Build artifacts
+dist
+coverage
+.swc
+.vite
+
+# Node modules
+node_modules
+
+# System files
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode
+.idea
+
+# Tauri
+src-tauri
+
+# MSC
+desig
+public
