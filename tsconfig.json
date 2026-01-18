@@ -14,9 +14,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "src/*"
-      ]
+      "~/*": ["src/*"]
     },
     /* Linting */
     "strict": true,
@@ -29,7 +27,5 @@
     "noImplicitOverride": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

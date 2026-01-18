@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "title": "Hello World",
+    "content": "This is my first post",
+    "authorId": 1
+  },
+  {
+    "id": 2,
+    "title": "Hono is great",
+    "content": "Hono is a small, simple, and ultrafast web framework for the Edges.",
+    "authorId": 1
+  }
+]

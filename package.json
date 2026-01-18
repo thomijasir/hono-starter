@@ -5,16 +5,23 @@
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+    "start": "bun run --env-file=.env.production src/main.ts",
+    "start:staging": "bun run --env-file=.env.staging src/main.ts",
+    "dev": "bun run --env-file=.env.development --hot src/main.ts",
+    "dev:staging": "bun run --env-file=.env.staging --hot src/main.ts",
+    "dev:production": "bun run --env-file=.env.production --hot src/main.ts",
     "test": "bun test",
     "test:coverage": "bun run test -- --coverage",
     "test:open": "open ./coverage/index.html",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint src/ && tsc --noEmit"
+    "lint": "eslint src/ && tsc --noEmit",
+    "lint:fix": "eslint src/ --fix && tsc --noEmit --fix"
   },
   "dependencies": {
-    "hono": "^4.11.4"
+    "@hono/zod-validator": "^0.7.6",
+    "hono": "^4.11.4",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -22,6 +29,7 @@
     "@types/bun": "latest",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
     "globals": "^17.0.0",
     "typescript-eslint": "^8.53.0"
   }
