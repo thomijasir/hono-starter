@@ -1,3 +1,3 @@
 export * from "./response";
 export * from "./handler";
-export { log } from "./log";
+export { log, type LogType } from "./log";

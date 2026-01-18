@@ -4,6 +4,8 @@ import prettier from "eslint-config-prettier";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintImport from "eslint-plugin-import";
+import unicorn from "eslint-plugin-unicorn";
+import nodePlugin from "eslint-plugin-n";
 
 export default [
   {
@@ -27,7 +29,9 @@ export default [
   {
     // Define the plugin object explicitly
     plugins: {
+      node: nodePlugin, // This tells ESLint that "node/..." rules belong to this plugin
       import: eslintImport,
+      unicorn, // File Name Convetion
     },
     // CRITICAL: Tell ESLint how to resolve "@/..." paths using your tsconfig
     settings: {
@@ -73,9 +77,18 @@ export default [
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": "error",
+      "unicorn/filename-case": [
+        "error",
+        {
+          case: "snakeCase",
+          // Ignore specific files using regex
+          ignore: [/^README\.md$/, /^Dockerfile$/],
+        },
+      ],
+      "node/no-process-env": "error",
       eqeqeq: ["error", "always"],
       "no-console": ["warn", { allow: ["warn", "error"] }],
-      "import/no-unresolved": "error",
+      "import/no-unresolved": ["error"],
       /* 2. ENCAPSULATION & IMPORT PATHS */
       "no-restricted-imports": [
         "error",

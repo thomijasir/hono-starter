@@ -6,7 +6,7 @@ export const auth: MiddlewareHandler<{ Variables: Variables }> = async (
   c,
   next,
 ) => {
-  const state = c.get("state");
+  const state = c.var.state;
   const jwtMiddleware = jwt({
     secret: state.config.jwtSecret,
     alg: "HS256",

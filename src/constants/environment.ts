@@ -1,7 +1,15 @@
-export const ENVIRONMENT = {
-  NODE_ENV: process.env.NODE_ENV ?? "development",
-  PORT: parseInt(process.env.PORT ?? "3090", 10),
-  DB_URL: process.env.DB_URL ?? "postgres://localhost:5432/mydb",
-  JWT_SECRET: process.env.JWT_SECRET ?? "starter-secret-hono",
-  USE_HTTPS: process.env.USE_HTTPS === "true",
-};
+/* eslint-disable */
+import { z } from "zod";
+
+const envSchema = z.object({
+  NODE_ENV: z.enum(["development", "staging", "production"]),
+  PORT: z.coerce.number().default(3090),
+  DB_URL: z.string().default("pgsql//"),
+  JWT_SECRET: z.string().default("hono-secret-starter-pack"),
+  USE_HTTPS: z
+    .string()
+    .default("false")
+    .transform((v) => v === "true"),
+});
+
+export const ENVIRONMENT = envSchema.parse(process.env);

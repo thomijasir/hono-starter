@@ -1,5 +1,8 @@
 # Rust Grade Starter Pack Hono + Bun
 
+![Preview of the project](preview.png)
+
+
 > A robust, lightweight, and collaborative-ready backend starter pack built with [Hono](https://hono.dev/) and [Bun](https://bun.sh/).
 
 ## Background & Motivation

@@ -1,3 +1,5 @@
+import type { LogType } from "~/utils";
+
 export interface AppConfig {
   environment: string;
   port: number;
@@ -21,4 +23,5 @@ export interface AppState {
 // Hono Variables definition
 export interface Variables {
   state: AppState;
+  log: LogType;
 }

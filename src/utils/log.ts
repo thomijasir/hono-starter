@@ -1,5 +1,7 @@
 /* eslint-disable no-console */
 
+import { ENVIRONMENT } from "~/constants";
+
 type LogLevel = "debug" | "info" | "warn" | "error";
 
 interface LogFn {
@@ -12,7 +14,7 @@ class Logger {
 
   constructor() {
     // Determine environment explicitly
-    const env = process.env.ENVIRONMENT ?? "development";
+    const env = ENVIRONMENT.NODE_ENV;
     // Default to strict JSON in production, Pretty in development
     this.isProduction = env === "production";
   }
@@ -116,3 +118,4 @@ class Logger {
 }
 
 export const log = new Logger();
+export type LogType = typeof log;

@@ -6,7 +6,7 @@ import path from "node:path";
 import { logger } from "~/middlewares";
 import type { AppState, Variables } from "~/model";
 import { userRoutes, postRoutes } from "~/modules";
-import { errorResponse } from "~/utils";
+import { errorResponse, log } from "~/utils";
 
 export const createApp = (state: AppState) => {
   const app = new Hono<{ Variables: Variables }>();
@@ -17,8 +17,11 @@ export const createApp = (state: AppState) => {
     .use(logger())
     .use(cors())
     .use(async (c, next) => {
+      // Context Registration
       // Set State To Context
       c.set("state", state);
+      // Set Log To Context
+      c.set("log", log);
       await next();
     });
 
@@ -33,7 +36,7 @@ export const createApp = (state: AppState) => {
     return errorResponse(c, "Not Found", 404);
   });
 
-  app.get("/", async () => {
+  app.get("/", () => {
     const filePath = path.join(process.cwd(), "public", "index.html");
     const file = Bun.file(filePath);
     return new Response(file);
