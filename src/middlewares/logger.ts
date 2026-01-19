@@ -1,8 +1,7 @@
-import type { MiddlewareHandler } from "hono";
+import { createMiddleware } from "hono/factory";
 import { log } from "~/utils";
 
-export const logger = (): MiddlewareHandler => {
-  return async (c, next) => {
+export const logger = createMiddleware(async (c, next) => {
     const start = Date.now();
     const { method, path } = c.req;
 
@@ -21,5 +20,4 @@ export const logger = (): MiddlewareHandler => {
       },
       `${method} ${path}`,
     );
-  };
-};
+  });

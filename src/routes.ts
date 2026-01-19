@@ -14,7 +14,7 @@ export const createApp = (state: AppState) => {
   // Inject State Middleware
   app
     .use(requestId())
-    .use(logger())
+    .use(logger)
     .use(cors())
     .use(async (c, next) => {
       // Context Registration

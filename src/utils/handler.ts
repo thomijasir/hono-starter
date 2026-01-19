@@ -7,14 +7,18 @@ import type {
   PaginationMeta,
 } from "~/model";
 
-export const createHandler = (
-  handler: (ctx: HandlerContext) => Promise<Response> | Response,
+export const createHandler = <
+  TBody = unknown,
+  TQuery = Record<string, string | undefined>
+>(
+  handler: (ctx: HandlerContext<TBody, TQuery>) => Promise<Response> | Response,
 ) => {
   return async (ctx: Context<{ Variables: Variables }>) => {
     const params = ctx.req.param();
-    const query = ctx.req.query();
+    const query = ctx.req.query() as TQuery;
     const state = ctx.var.state;
-    let body: unknown = null;
+    const log = ctx.var.log;
+    let body = null as TBody;
 
     // specific content-type check to avoid parsing errors on GET requests or non-JSON bodies
     if (
@@ -25,7 +29,7 @@ export const createHandler = (
         body = await ctx.req.json();
       } catch (_: unknown) {
         // silent fail for body parsing, treating as null
-        body = null;
+        body = null as TBody;
       }
     }
 
@@ -45,6 +49,7 @@ export const createHandler = (
     return handler({
       ctx,
       state,
+      log,
       params,
       query,
       body,
