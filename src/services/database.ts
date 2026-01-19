@@ -4,56 +4,60 @@ import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import { drizzle as drizzleSql } from "drizzle-orm/bun-sql";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { drizzle as drizzleSqlite } from "drizzle-orm/bun-sqlite";
-
 import { log } from "~/utils";
 
 export type DbDriver = "SQLITE" | "PGSQL" | "MYSQL";
-export type DrizzleDB = BunSQLiteDatabase | BunSQLDatabase;
+export type DrizzleDBSqlite = BunSQLiteDatabase;
+export type DrizzleDBSql = BunSQLDatabase;
 
-export class Database {
-  public client: BunSQLite | SQL;
-  public db: BunSQLiteDatabase | BunSQLDatabase;
-  private driver: DbDriver;
+export class DBSqliteService {
+  public client: BunSQLite;
+  public db: BunSQLiteDatabase;
+  public driver = "SQLITE" as const;
 
-  constructor(driver: DbDriver, url: string) {
+  constructor(url: string) {
+    const dbName = url;
+    this.client = new BunSQLite(dbName);
+    this.db = drizzleSqlite({ client: this.client, casing: "snake_case" });
+    log.info(`[Database] Initializing connection for driver: ${this.driver}`);
+  }
+
+  public close() {
+    log.info("[Database] Closing connection...");
+    this.client.close();
+    log.info("[Database] Connection closed.");
+  }
+
+  public query(sql: string) {
+    log.info(`[Database] Executing raw query: ${sql}`);
+    return this.client.query(sql).all();
+  }
+}
+
+export class DBSqlService {
+  public client: SQL;
+  public db: BunSQLDatabase;
+  public driver: "PGSQL" | "MYSQL";
+
+  constructor(driver: "PGSQL" | "MYSQL", url: string) {
     this.driver = driver;
-    // Initializing with temporary values to satisfy TS, will be overwritten in init
-    // essentially definite assignment assertion, but cleaner to just init
-    if (driver === "SQLITE") {
-      const dbName = url;
-      this.client = new BunSQLite(dbName);
-      this.db = drizzleSqlite({ client: this.client, casing: "snake_case" });
-    } else {
-      if (!url) {
-        throw new Error(`Database URL is required for driver: ${driver}`);
-      }
-      this.client = new SQL(url);
-      this.db = drizzleSql({ client: this.client, casing: "snake_case" });
+    if (!url) {
+      throw new Error(`Database URL is required for driver: ${driver}`);
     }
-
-    // Logging after init
+    this.client = new SQL(url);
+    this.db = drizzleSql({ client: this.client, casing: "snake_case" });
     log.info(`[Database] Initializing connection for driver: ${this.driver}`);
   }
 
   public async close() {
     log.info("[Database] Closing connection...");
-    if (this.driver === "SQLITE") {
-      // client is BunSQLite | SQL
-      // guarded by driver check, but TS might need casting or narrowing if it doesn't track this.driver correlation
-      (this.client as BunSQLite).close();
-    } else {
-      await (this.client as SQL).end();
-    }
+    await this.client.end();
     log.info("[Database] Connection closed.");
   }
 
   public async query(sql: string) {
     log.info(`[Database] Executing raw query: ${sql}`);
-    if (this.driver === "SQLITE") {
-      return (this.client as BunSQLite).query(sql).all();
-    }
-    // Bun SQL
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return await (this.client as SQL)(sql);
+    return await this.client(sql);
   }
 }

@@ -3,16 +3,16 @@ import type { HandlerContext } from "~/model";
 import { createHandler } from "~/utils";
 
 export const getAllUsers = createHandler(
-  ({ state, httpResponse }: HandlerContext) => {
-    const posts = userService.getUsers(state);
-    return httpResponse(posts);
+  async ({ state, httpResponse }: HandlerContext) => {
+    const users = await userService.getUsers(state);
+    return httpResponse(users);
   },
 );
 
 export const getUser = createHandler(
-  ({ params, httpResponse, errorResponse }: HandlerContext) => {
+  async ({ state, params, httpResponse, errorResponse }: HandlerContext) => {
     const id = Number(params.id);
-    const user = userService.getUserById(id);
+    const user = await userService.getUserById(state, id);
 
     if (!user) {
       return errorResponse("User not found", 404);

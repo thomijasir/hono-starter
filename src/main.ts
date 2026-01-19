@@ -41,7 +41,7 @@ const startServer = async () => {
       isShuttingDown = true;
       log.info("Gracefully shutting down...");
       await server.stop();
-      await state.dbClient.close();
+      state.dbClient.close();
       log.info("Server and Database closed. Exiting process.");
       // eslint-disable-next-line n/no-process-exit
       process.exit(0);

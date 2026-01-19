@@ -5,7 +5,7 @@ import { requestId } from "hono/request-id";
 import path from "node:path";
 import { logger } from "~/middlewares";
 import type { AppState, Variables } from "~/model";
-import { userRoutes, postRoutes } from "~/modules";
+import { authRoutes, postRoutes, userRoutes } from "~/modules";
 import { errorResponse, log } from "~/utils";
 
 export const createApp = (state: AppState) => {
@@ -48,6 +48,7 @@ export const createApp = (state: AppState) => {
   // or use the generic Handler type.
   app.route("/user", userRoutes);
   app.route("/post", postRoutes);
+  app.route("/auth", authRoutes);
 
   app.all("*", async (c) => {
     try {

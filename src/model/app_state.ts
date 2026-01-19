@@ -1,4 +1,4 @@
-import type { Database, DrizzleDB } from "~/services";
+import type { DrizzleDBSqlite, DBSqliteService } from "~/services";
 import type { LogType } from "~/utils";
 
 export interface AppConfig {
@@ -7,13 +7,14 @@ export interface AppConfig {
   dbUrl: string;
   useHttps: boolean;
   jwtSecret: string;
+  passwordSalt: string;
   dbDriver: "SQLITE" | "PGSQL" | "MYSQL";
 }
 
 export interface AppState {
   config: AppConfig;
-  db: DrizzleDB;
-  dbClient: Database;
+  db: DrizzleDBSqlite;
+  dbClient: DBSqliteService;
   // Add Redis or other stateful services here
   // redis: RedisConnection;
 }
