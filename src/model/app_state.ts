@@ -1,3 +1,4 @@
+import type { Database } from "~/services";
 import type { LogType } from "~/utils";
 
 export interface AppConfig {
@@ -6,16 +7,12 @@ export interface AppConfig {
   dbUrl: string;
   useHttps: boolean;
   jwtSecret: string;
-}
-
-export interface DatabaseConnection {
-  query: (sql: string) => Promise<unknown>;
-  disconnect: () => Promise<void>;
+  dbDriver: "SQLITE" | "PGSQL" | "MYSQL";
 }
 
 export interface AppState {
   config: AppConfig;
-  db: DatabaseConnection;
+  db: Database;
   // Add Redis or other stateful services here
   // redis: RedisConnection;
 }

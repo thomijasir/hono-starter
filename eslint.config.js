@@ -37,7 +37,9 @@ export default [
     settings: {
       "import/resolver": {
         typescript: {
+          alwaysTryTypes: true,
           project: "./tsconfig.json", // Ensure this points to your tsconfig
+          bun: true
         },
       },
     },
