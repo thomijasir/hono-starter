@@ -1,0 +1,4 @@
+name: Local Development Server
+variables:
+  - name: baseUrl
+    value: http://localhost:3099

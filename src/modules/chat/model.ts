@@ -1,18 +1,18 @@
 import { z } from "zod";
 
 export const ConnectSchema = z.object({
-  app_id: z.string().min(1),
-  user_id: z.string().min(1),
+  appId: z.string().min(1),
+  userId: z.string().min(1),
   name: z.string().optional(),
-  device_token: z.string().optional(),
-  device_type: z.enum(["android", "ios", "web"]).optional(),
+  deviceToken: z.string().optional(),
+  deviceType: z.enum(["android", "ios", "web"]).optional(),
 });
 
 export type ConnectPayload = z.infer<typeof ConnectSchema>;
 
 export const CreateConversationSchema = z.object({
   type: z.enum(["DIRECT", "GROUP"]),
-  participant_ids: z.array(z.string()).min(1),
+  participantIds: z.array(z.string()).min(1),
   name: z.string().optional(),
 });
 
@@ -32,5 +32,5 @@ export const GetMessagesQuerySchema = z.object({
 });
 
 export const AddParticipantSchema = z.object({
-  user_ids: z.array(z.string()).min(1),
+  userIds: z.array(z.string()).min(1),
 });

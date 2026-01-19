@@ -18,20 +18,19 @@ import { generateLiveKitToken } from "~/utils";
 
 // --- User Management ---
 
-export const connectUser = (state: AppState, payload: ConnectPayload) => {
-  const { db } = state;
+export const connectUser = ({db}: AppState, payload: ConnectPayload) => {
   const now = new Date().toISOString();
 
   // Upsert user
   const [user] = db
     .insert(chatUsers)
     .values({
-      id: `${payload.app_id}_${payload.user_id}`, // Composite ID simulation
-      appId: payload.app_id,
-      userId: payload.user_id,
+      id: `${payload.appId}_${payload.userId}`, // Composite ID simulation
+      appId: payload.appId,
+      userId: payload.userId,
       name: payload.name,
-      deviceToken: payload.device_token,
-      deviceType: payload.device_type,
+      deviceToken: payload.deviceToken,
+      deviceType: payload.deviceType,
       lastSeen: now,
       updatedAt: now,
     })
@@ -39,8 +38,8 @@ export const connectUser = (state: AppState, payload: ConnectPayload) => {
       target: chatUsers.id, // Assuming ID is PK
       set: {
         lastSeen: now,
-        deviceToken: payload.device_token ?? sql`device_token`,
-        deviceType: payload.device_type ?? sql`device_type`,
+        deviceToken: payload.deviceToken ?? sql`deviceToken`,
+        deviceType: payload.deviceType ?? sql`deviceType`,
         name: payload.name ?? sql`name`,
         updatedAt: now,
       },
@@ -53,16 +52,15 @@ export const connectUser = (state: AppState, payload: ConnectPayload) => {
 // --- Conversation Management ---
 
 export const createConversation = (
-  state: AppState,
+  {db}: AppState,
   payload: CreateConversationPayload,
   currentUserId: string,
   appId: string
 ) => {
-  const { db } = state;
   
   // 1-on-1 Logic: Check if conversation exists
-  if (payload.type === "DIRECT" && payload.participant_ids.length === 1) {
-    const _otherUserId = payload.participant_ids[0];
+  if (payload.type === "DIRECT" && payload.participantIds.length === 1) {
+    const _otherUserId = payload.participantIds[0];
     // logic...
   }
 
@@ -83,7 +81,7 @@ export const createConversation = (
     .returning().all();
 
   // Add Participants
-  const participantIds = [currentUserId, ...payload.participant_ids].map(
+  const participantIds = [currentUserId, ...payload.participantIds].map(
     (uid) => `${appId}_${uid}`
   );
   
@@ -104,11 +102,10 @@ export const createConversation = (
 };
 
 export const getConversations = (
-  state: AppState,
+  {db}: AppState,
   currentUserId: string,
   appId: string
 ) => {
-  const { db } = state;
   const userKey = `${appId}_${currentUserId}`;
 
   // Get conversations user is part of

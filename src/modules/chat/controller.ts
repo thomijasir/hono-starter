@@ -3,13 +3,12 @@ import * as chatService from "./service";
 import type { HandlerContext } from "~/model";
 import { createHandler } from "~/utils";
 
-export const connect = createHandler(async ({ ctx, httpResponse }: HandlerContext) => {
-  const payload = (await ctx.req.json()) as unknown;
-  const validPayload = chatModel.ConnectSchema.parse(payload);
-  
-  // We attach the state to the flow
-  // In a real app, you might want to authenticate first, but here this IS the auth/connect
-  const user = chatService.connectUser(ctx.get("state"), validPayload);
+export const connect = createHandler(async ({ state, ctx, httpResponse }: HandlerContext) => {
+    const payload = (await ctx.req.json()) as unknown;
+    const validPayload = chatModel.ConnectSchema.parse(payload);
+    // We attach the state to the flow
+    // In a real app, you might want to authenticate first, but here this IS the auth/connect
+    const user = chatService.connectUser(state, validPayload);
   
   return httpResponse(user, "Connected successfully");
 });
@@ -65,7 +64,7 @@ export const getMessages = createHandler(({ ctx, params, query, httpResponse, er
     if (!conversationId) return errorResponse("Conversation ID missing", 400);
 
     const limit = Number(query.limit) || 50;
-    const cursor = query.cursor as string | undefined;
+    const cursor = query.cursor;
     
     const messages = chatService.getMessages(ctx.get("state"), conversationId, limit, cursor);
     return httpResponse(messages);
@@ -115,7 +114,7 @@ export const addParticipants = createHandler(async ({ ctx, params, httpResponse,
     const payload = (await ctx.req.json()) as unknown;
     const validPayload = chatModel.AddParticipantSchema.parse(payload);
 
-    chatService.addParticipants(ctx.get("state"), conversationId, validPayload.user_ids, userId, appId);
+    chatService.addParticipants(ctx.get("state"), conversationId, validPayload.userIds, userId, appId);
     return httpResponse({ success: true }, "Participants added");
 });
 
