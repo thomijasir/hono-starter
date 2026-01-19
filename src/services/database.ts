@@ -22,13 +22,13 @@ export class Database {
     if (driver === "SQLITE") {
       const dbName = url;
       this.client = new BunSQLite(dbName);
-      this.db = drizzleSqlite({ client: this.client });
+      this.db = drizzleSqlite({ client: this.client, casing: "snake_case" });
     } else {
       if (!url) {
         throw new Error(`Database URL is required for driver: ${driver}`);
       }
       this.client = new SQL(url);
-      this.db = drizzleSql({ client: this.client });
+      this.db = drizzleSql({ client: this.client, casing: "snake_case" });
     }
 
     // Logging after init

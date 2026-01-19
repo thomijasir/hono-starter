@@ -18,7 +18,11 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint src/ && tsc --noEmit",
-    "lint:fix": "eslint src/ --fix && tsc --noEmit --fix"
+    "lint:fix": "eslint src/ --fix && tsc --noEmit --fix",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:migrate:code": "tsx scripts/migrate.ts",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.6",

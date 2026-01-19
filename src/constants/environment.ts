@@ -7,6 +7,7 @@ const envSchema = z.object({
   DB_URL: z.string().default("sqlite.db"),
   DB_DRIVER: z.enum(["SQLITE", "PGSQL", "MYSQL"]).default("SQLITE"),
   JWT_SECRET: z.string().default("hono-secret-starter-pack"),
+  PASSWORD_SALT: z.string().default("salt"),
   USE_HTTPS: z
     .string()
     .default("false")
