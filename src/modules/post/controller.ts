@@ -7,9 +7,18 @@ import type { HandlerContext, Variables } from "~/model";
 import { createHandler } from "~/utils";
 
 export const getAllPosts = createHandler(
-  async ({ state, httpResponse }: HandlerContext) => {
-    const posts = await postService.getPosts(state);
-    return httpResponse(posts);
+  async ({ ctx, state, httpResponse }: HandlerContext) => {
+    const page = Number(ctx.req.query("page")) || 1;
+    const limit = Number(ctx.req.query("limit")) || 10;
+
+    const { posts, total } = await postService.getPosts(state, page, limit);
+
+    return httpResponse(posts, "Posts fetched successfully", 200, {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 );
 

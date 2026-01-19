@@ -14,7 +14,7 @@ export const httpResponse = <T>(
 ) => {
   return ctx.json(
     {
-      status: "success",
+      success: true,
       message,
       data,
       meta,
@@ -34,7 +34,7 @@ export const errorResponse = (
 ) => {
   return ctx.json(
     {
-      status: "error",
+      success: false,
       message,
       data: errors,
     } satisfies ApiResponse,
