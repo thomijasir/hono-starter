@@ -1,4 +1,4 @@
-import type { Database } from "~/services";
+import type { Database, DrizzleDB } from "~/services";
 import type { LogType } from "~/utils";
 
 export interface AppConfig {
@@ -12,7 +12,8 @@ export interface AppConfig {
 
 export interface AppState {
   config: AppConfig;
-  db: Database;
+  db: DrizzleDB;
+  dbClient: Database;
   // Add Redis or other stateful services here
   // redis: RedisConnection;
 }

@@ -1,13 +1,11 @@
 import * as postService from "./service";
-import { createHandler  } from "~/utils";
-import type {HandlerContext} from "~/utils";
+import type { HandlerContext } from "~/model";
+import { createHandler } from "~/utils";
 
-export const getAllPosts = createHandler(
-  ({ httpResponse }: HandlerContext) => {
-    const posts = postService.getPosts();
-    return httpResponse(posts);
-  },
-);
+export const getAllPosts = createHandler(({ httpResponse }: HandlerContext) => {
+  const posts = postService.getPosts();
+  return httpResponse(posts);
+});
 
 export const getPost = createHandler(
   ({ params, httpResponse, errorResponse }: HandlerContext) => {

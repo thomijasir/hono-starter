@@ -1,30 +1,30 @@
-import type { Context } from "hono";
 import * as userService from "./service";
-import type { Variables } from "~/model";
-import { httpResponse, errorResponse } from "~/utils";
+import type { HandlerContext } from "~/model";
+import { createHandler } from "~/utils";
 
-export const getAllUsers = async (c: Context<{ Variables: Variables }>) => {
-  const state = c.get("state");
-  
-  // Simulate a DB query
-  await state.db.query("SELECT * FROM users");
+export const getAllUsers = createHandler(
+  ({ state, httpResponse }: HandlerContext) => {
+    const posts = userService.getUsers(state);
+    return httpResponse(posts);
+  },
+);
 
-  const users = userService.getUsers();
-  return httpResponse(c, users);
-};
+export const getUser = createHandler(
+  ({ params, httpResponse, errorResponse }: HandlerContext) => {
+    const id = Number(params.id);
+    const user = userService.getUserById(id);
 
-export const getUser = (c: Context) => {
-  const id = Number(c.req.param("id"));
-  const user = userService.getUserById(id);
+    if (!user) {
+      return errorResponse("User not found", 404);
+    }
 
-  if (!user) {
-    return errorResponse(c, "User not found", 404);
-  }
+    return httpResponse(user);
+  },
+);
 
-  return httpResponse(c, user);
-};
-
-export const getMyProfile = (c: Context<{ Variables: Variables }>) => {
-  const payload = c.get("jwtPayload") as { sub: string };
-  return httpResponse(c, payload);
-};
+export const getMyProfile = createHandler(
+  ({ ctx, httpResponse }: HandlerContext) => {
+    const payload = ctx.var.jwtPayload as Record<string, string>;
+    return httpResponse(payload);
+  },
+);

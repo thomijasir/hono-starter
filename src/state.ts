@@ -19,13 +19,15 @@ export const initializeState = async (): Promise<AppState> => {
   log.info("Starting Application Initialization...");
 
   const config = loadConfig();
-  const db = new Database(config.dbDriver, config.dbUrl);
+  const dbClient = new Database(config.dbDriver, config.dbUrl);
+  const db = dbClient.db;
 
   // Freeze the state object to prevent modifications at runtime if desired
   // though TypeScript readonly properties are usually enough for compile time safety
   const state: AppState = {
     config,
     db,
+    dbClient,
   };
 
   log.info("Application State Initialized.");

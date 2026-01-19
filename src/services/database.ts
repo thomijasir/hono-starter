@@ -8,28 +8,29 @@ import { drizzle as drizzleSqlite } from "drizzle-orm/bun-sqlite";
 import { log } from "~/utils";
 
 export type DbDriver = "SQLITE" | "PGSQL" | "MYSQL";
+export type DrizzleDB = BunSQLiteDatabase | BunSQLDatabase;
 
 export class Database {
   public client: BunSQLite | SQL;
   public db: BunSQLiteDatabase | BunSQLDatabase;
   private driver: DbDriver;
 
-  constructor(driver: DbDriver, url?: string) {
+  constructor(driver: DbDriver, url: string) {
     this.driver = driver;
     // Initializing with temporary values to satisfy TS, will be overwritten in init
     // essentially definite assignment assertion, but cleaner to just init
     if (driver === "SQLITE") {
-       const dbName = url ?? "sqlite.db";
-       this.client = new BunSQLite(dbName);
-       this.db = drizzleSqlite({ client: this.client });
+      const dbName = url;
+      this.client = new BunSQLite(dbName);
+      this.db = drizzleSqlite({ client: this.client });
     } else {
-       if (!url) {
-         throw new Error(`Database URL is required for driver: ${driver}`);
-       }
-       this.client = new SQL(url);
-       this.db = drizzleSql({ client: this.client });
+      if (!url) {
+        throw new Error(`Database URL is required for driver: ${driver}`);
+      }
+      this.client = new SQL(url);
+      this.db = drizzleSql({ client: this.client });
     }
-    
+
     // Logging after init
     log.info(`[Database] Initializing connection for driver: ${this.driver}`);
   }

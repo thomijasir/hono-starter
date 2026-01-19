@@ -5,11 +5,13 @@
   "license": "MIT",
   "version": "0.0.1",
   "scripts": {
+    "ci": "bun install --frozen-lockfile",
     "start": "bun run --env-file=.env.production src/main.ts",
     "start:staging": "bun run --env-file=.env.staging src/main.ts",
     "dev": "bun run --env-file=.env.development --hot src/main.ts",
     "dev:staging": "bun run --env-file=.env.staging --hot src/main.ts",
     "dev:production": "bun run --env-file=.env.production --hot src/main.ts",
+    "build": "bun build src/main.ts --env-file=.env.production --compile --outfile=dist/app",
     "test": "bun test",
     "test:coverage": "bun run test -- --coverage",
     "test:open": "open ./coverage/index.html",

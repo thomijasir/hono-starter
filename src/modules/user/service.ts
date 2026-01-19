@@ -1,7 +1,9 @@
 import usersData from "./mocks/users.json";
 import type { User } from "./model";
+import type { AppState } from "~/model";
 
-export const getUsers = (): User[] => {
+export const getUsers = async (state: AppState) => {
+  await state.dbClient.query("SELECT * from user");
   return usersData;
 };
 
