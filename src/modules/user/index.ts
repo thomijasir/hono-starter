@@ -11,8 +11,9 @@ routes.get("/", userController.getAllUsers);
 routes.get("/myinfo", auth, userController.getMyProfile);
 routes.get(
   "/:id",
+  auth,
   validator("param", GetUserParamSchema),
   userController.getUser,
-);
+);  
 
 export { routes as userRoutes };

@@ -1,14 +1,15 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { AppState, Variables } from "./app_state";
+import type { Variables } from "./app_state";
 import type { PaginationMeta } from "./response";
 
-export interface HandlerContext {
+export interface HandlerContext<TBody = unknown, TQuery = Record<string, string | undefined>> {
   ctx: Context<{ Variables: Variables }>;
-  state: AppState;
+  state: Variables["state"];
+  log: Variables["log"];
   params: Record<string, string>;
-  query: Record<string, string>;
-  body: unknown;
+  query: TQuery;
+  body: TBody;
   httpResponse: (
     data: unknown,
     message?: string,
