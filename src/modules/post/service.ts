@@ -1,14 +1,31 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { CreatePostPayload, UpdatePostPayload } from "./model";
 import type { AppState } from "~/model";
 import { posts } from "~/schemas/default";
 
-export const getPosts = async (state: AppState) => {
-  return await state.dbClient.db.select().from(posts);
+export const getPosts = async (
+  {db}: AppState,
+  page: number = 1,
+  limit: number = 10,
+) => {
+  const dataset = await db
+    .select()
+    .from(posts)
+    .limit(limit)
+    .offset((page - 1) * limit);
+
+  const [countResult] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(posts);
+
+  return {
+    posts: dataset,
+    total: countResult?.count ?? 0,
+  };
 };
 
-export const getPostById = async (state: AppState, id: number) => {
-  const [post] = await state.dbClient.db
+export const getPostById = async ({db}: AppState, id: number) => {
+  const [post] = await db
     .select()
     .from(posts)
     .where(eq(posts.id, id));
@@ -16,11 +33,11 @@ export const getPostById = async (state: AppState, id: number) => {
 };
 
 export const createPost = async (
-  state: AppState,
+  {db}: AppState,
   authorId: number,
   payload: CreatePostPayload,
 ) => {
-  const [newPost] = await state.dbClient.db
+  const [newPost] = await db
     .insert(posts)
     .values({
       ...payload,
@@ -31,11 +48,11 @@ export const createPost = async (
 };
 
 export const updatePost = async (
-  state: AppState,
+  {db}: AppState,
   id: number,
   payload: UpdatePostPayload,
 ) => {
-  const [updatedPost] = await state.dbClient.db
+  const [updatedPost] = await db
     .update(posts)
     .set({
       ...payload,
@@ -46,6 +63,6 @@ export const updatePost = async (
   return updatedPost;
 };
 
-export const deletePost = async (state: AppState, id: number) => {
-  await state.dbClient.db.delete(posts).where(eq(posts.id, id));
+export const deletePost = async ({db}: AppState, id: number) => {
+  await db.delete(posts).where(eq(posts.id, id));
 };

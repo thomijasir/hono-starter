@@ -1,5 +1,3 @@
-export type ResponseStatus = "success" | "error";
-
 export interface PaginationMeta {
   page: number;
   limit: number;
@@ -8,7 +6,7 @@ export interface PaginationMeta {
 }
 
 export interface ApiResponse<T = unknown> {
-  status: ResponseStatus;
+  success: boolean;
   message: string;
   data: T | null;
   meta?: PaginationMeta;
