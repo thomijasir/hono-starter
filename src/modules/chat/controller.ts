@@ -6,17 +6,17 @@ import type {
   UploadFilePayload,
 } from "./model";
 import * as service from "./service";
-import { createHandler } from "~/utils";
+import { createHandler, createFormHandler, createJsonHandler } from "~/utils";
 
-export const connect = createHandler<ConnectPayload>(
-   ({ state, body, httpResponse }) => {
+export const connect = createJsonHandler<ConnectPayload>(
+  ({ state, body, httpResponse }) => {
     const user = service.connectUser(state, body);
     return httpResponse(user, "Connected successfully");
   },
 );
 
-export const createConversation = createHandler<CreateConversationPayload>(
-   ({ body, state, header, httpResponse }) => {
+export const createConversation = createJsonHandler<CreateConversationPayload>(
+  ({ body, state, header, httpResponse }) => {
     // Expect user_id and app_id from header or previous middleware (simulated here)
     // For MVP, passing in body or header. Let's assume headers or body for current user.
     // Ideally request is Authenticated via Middleware.
@@ -43,7 +43,7 @@ export const getConversations = createHandler(
   },
 );
 
-export const sendMessage = createHandler<SendMessagePayload>(
+export const sendMessage = createJsonHandler<SendMessagePayload>(
   async ({ state, body, header, params, httpResponse, errorResponse }) => {
     const userId = header["x-user-id"];
     const appId = header["x-app-id"];
@@ -94,7 +94,7 @@ export const getCallToken = createHandler(
   },
 );
 
-export const uploadFile = createHandler<UploadFilePayload>(
+export const uploadFile = createFormHandler<UploadFilePayload>(
   async ({ body, httpResponse }) => {
     const file = body.file;
 
@@ -116,8 +116,8 @@ export const uploadFile = createHandler<UploadFilePayload>(
   },
 );
 
-export const addParticipants = createHandler<AddParticipantPayload>(
-   ({ state, header, body, params, httpResponse, errorResponse }) => {
+export const addParticipants = createJsonHandler<AddParticipantPayload>(
+  ({ state, header, body, params, httpResponse, errorResponse }) => {
     const userId = header["x-user-id"];
     const appId = header["x-app-id"];
     if (!userId || !appId) throw new Error("Missing auth headers");
