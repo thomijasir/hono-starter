@@ -1,6 +1,6 @@
 import type { CreatePostPayload, UpdatePostPayload } from "./model";
 import * as postService from "./service";
-import { createHandler } from "~/utils";
+import { createHandler, createJsonHandler } from "~/utils";
 
 export const getAllPosts = createHandler(
   async ({ query, state, httpResponse }) => {
@@ -27,7 +27,7 @@ export const getPost = createHandler(
   },
 );
 
-export const createPost = createHandler<CreatePostPayload, { id: number }>(
+export const createPost = createJsonHandler<CreatePostPayload, { id: number }>(
   async ({ state, body, claim, httpResponse, errorResponse }) => {
     if (!claim) {
       return errorResponse("Unauthorized", 401);
@@ -37,7 +37,7 @@ export const createPost = createHandler<CreatePostPayload, { id: number }>(
   },
 );
 
-export const updatePost = createHandler<UpdatePostPayload, { id: number }>(
+export const updatePost = createJsonHandler<UpdatePostPayload, { id: number }>(
   async ({
     state,
     params,
@@ -67,7 +67,7 @@ export const updatePost = createHandler<UpdatePostPayload, { id: number }>(
   },
 );
 
-export const deletePost = createHandler<null, { id: number }>(
+export const deletePost = createHandler<{ id: number }>(
   async ({
     state,
     params,

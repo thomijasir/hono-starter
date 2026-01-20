@@ -21,7 +21,7 @@ export const getUser = createHandler(
   },
 );
 
-export const getMyProfile = createHandler<unknown, { id: number }>(
+export const getMyProfile = createHandler<{ id: number }>(
   ({ httpResponse, claim }) => {
     return httpResponse(claim);
   },

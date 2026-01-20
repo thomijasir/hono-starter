@@ -61,13 +61,14 @@ The router prioritizes API logic while supporting static assets for landing page
 Each feature (e.g., `users`) is a self-contained unit following strict layers:
 -   **`model.ts`**: Zod Schemas and TypeScript Types. **No logic.**
 -   **`service.ts`**: Pure Business Logic. Database interactions. **No HTTP knowledge.**
--   **`controller.ts`**: HTTP Layer. Handles Request/Response, calls Service. **Uses `createHandler`.**
+-   **`controller.ts`**: HTTP Layer. Handles Request/Response, calls Service. **Uses `createGetHandler`, `createJsonHandler`, etc.**
 -   **`index.ts`**: Route definitions mapping paths to controllers.
 
 ### 5. Utilities (`src/utils/`)
 
 Shared tools to enforce consistency:
--   **`createHandler`**: A higher-order function that wraps every controller. It manages error handling (try/catch) and context injection (type-safe `ctx`, `state`, `logger`).
+
+-   **Handler Generators**: Higher-order functions (`createHandler`, `createJsonHandler`, `createFormHandler`) that wrap controllers. They manage error handling, context injection, and strict type safety for request bodies.
 -   **`response.ts`**: Enforces strict JSON envelopes (`data`, `meta`, `status`).
 -   **`log.ts`**: Structural logging utility.
 
