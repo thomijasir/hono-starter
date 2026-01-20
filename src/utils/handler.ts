@@ -2,33 +2,54 @@ import { httpResponse, errorResponse } from "./response";
 import type {
   ContentfulStatusCode,
   Context,
-  HandlerContext,
   Variables,
   PaginationMeta,
 } from "~/model";
 
+interface HandlerContext<TBody = unknown, TClaim = unknown, TQuery = Record<string, string | undefined>> {
+  // ctx: Context<{ Variables: Variables }>; // Global context dont expose on production only for testing and development
+  state: Variables["state"];
+  log: Variables["log"];
+  params: Record<string, string>;
+  query: TQuery;
+  body: TBody;
+  claim: TClaim | null;
+  httpResponse: (
+    data: unknown,
+    message?: string,
+    status?: ContentfulStatusCode,
+    meta?: PaginationMeta,
+  ) => Response;
+  errorResponse: (
+    message?: string,
+    status?: ContentfulStatusCode,
+    errors?: unknown,
+  ) => Response;
+}
+
 export const createHandler = <
   TBody = unknown,
+  TClaim = unknown,
   TQuery = Record<string, string | undefined>
 >(
-  handler: (ctx: HandlerContext<TBody, TQuery>) => Promise<Response> | Response,
+  handler: (ctx: HandlerContext<TBody, TClaim, TQuery>) => Promise<Response> | Response,
 ) => {
   return async (ctx: Context<{ Variables: Variables }>) => {
     const params = ctx.req.param();
     const query = ctx.req.query() as TQuery;
     const state = ctx.var.state;
     const log = ctx.var.log;
+    const jwtPayload = ctx.var.jwtPayload as TClaim;
+    const claim = jwtPayload ?? null;
     let body = null as TBody;
 
-    // specific content-type check to avoid parsing errors on GET requests or non-JSON bodies
     if (
       ctx.req.method !== "GET" &&
       ctx.req.header("Content-Type")?.includes("application/json")
     ) {
       try {
-        body = await ctx.req.json();
+        body = await ctx.req.json();  
       } catch (_: unknown) {
-        // silent fail for body parsing, treating as null
         body = null as TBody;
       }
     }
@@ -47,12 +68,13 @@ export const createHandler = <
     ) => errorResponse(ctx, message, status, errors);
 
     return handler({
-      ctx,
+      // ctx, // Global context dont expose on production only for testing and development
       state,
       log,
       params,
       query,
       body,
+      claim,
       httpResponse: wrappedHttpResponse,
       errorResponse: wrappedErrorResponse,
     });

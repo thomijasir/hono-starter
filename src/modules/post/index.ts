@@ -1,26 +1,25 @@
-import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
-import * as postController from "./controller";
+import * as controller from "./controller";
 import { CreatePostSchema, UpdatePostSchema } from "./model";
-import { auth } from "~/middlewares";
+import { auth, validator } from "~/middlewares";
 import type { Variables } from "~/model";
 
 const routes = new Hono<{ Variables: Variables }>();
 
-routes.get("/", postController.getAllPosts);
-routes.get("/:id", postController.getPost);
+routes.get("/", controller.getAllPosts);
+routes.get("/:id", controller.getPost);
 routes.post(
   "/",
   auth,
-  zValidator("json", CreatePostSchema),
-  postController.createPost,
+  validator("json", CreatePostSchema),
+  controller.createPost,
 );
 routes.patch(
   "/:id",
   auth,
-  zValidator("json", UpdatePostSchema),
-  postController.updatePost,
+  validator("json", UpdatePostSchema),
+  controller.updatePost,
 );
-routes.delete("/:id", auth, postController.deletePost);
+routes.delete("/:id", auth, controller.deletePost);
 
 export { routes as postRoutes };
