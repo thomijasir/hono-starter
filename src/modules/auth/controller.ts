@@ -1,9 +1,9 @@
 import type { LoginPayload, RegisterPayload } from "./model";
 import * as authService from "./service";
 
-import { createHandler } from "~/utils";
+import { createJsonHandler, createHandler } from "~/utils";
 
-export const login = createHandler<LoginPayload>(
+export const login = createJsonHandler<LoginPayload>(
   async ({ body, state, httpResponse }) => {
     const payload = body;
     const token = await authService.login(state, payload);
@@ -11,7 +11,7 @@ export const login = createHandler<LoginPayload>(
   },
 );
 
-export const register = createHandler<RegisterPayload>(
+export const register = createJsonHandler<RegisterPayload>(
   async ({ body, state, httpResponse }) => {
     const payload = body;
     const token = await authService.register(state, payload);
