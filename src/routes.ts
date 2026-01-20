@@ -5,7 +5,7 @@ import { requestId } from "hono/request-id";
 import path from "node:path";
 import { logger } from "~/middlewares";
 import type { AppState, Variables } from "~/model";
-import { authRoutes, chatRoutes, postRoutes, userRoutes } from "~/modules";
+import { authRoutes, chatModule, postRoutes, userRoutes } from "~/modules";
 import { errorResponse, log } from "~/utils";
 
 export const createApp = (state: AppState) => {
@@ -49,7 +49,7 @@ export const createApp = (state: AppState) => {
   app.route("/user", userRoutes);
   app.route("/post", postRoutes);
   app.route("/auth", authRoutes);
-  app.route("/chat", chatRoutes);
+  app.route("/chat", chatModule());
 
   app.all("*", async (c) => {
     try {

@@ -1,29 +1,56 @@
 import { Hono } from "hono";
-import * as chatController from "./controller";
+import * as controller from "./controller";
+import {
+  AddParticipantSchema,
+  ConnectSchema,
+  CreateConversationSchema,
+  SendMessageSchema,
+  UploadFileSchema,
+} from "./model";
+import { validator } from "~/middlewares";
 
-export const chatRoutes = new Hono();
+export const chatModule = () => {
+  const routes = new Hono();
 
-// Connect / Auth
-chatRoutes.post("/connect", chatController.connect);
+  // Connect / Auth
+  routes.post("/connect", validator("json", ConnectSchema), controller.connect);
 
-// Conversations
-chatRoutes.post("/conversations", chatController.createConversation);
-chatRoutes.get("/conversations", chatController.getConversations);
+  // Conversations
+  routes.post(
+    "/conversations",
+    validator("json", CreateConversationSchema),
+    controller.createConversation,
+  );
+  routes.get("/conversations", controller.getConversations);
 
-// Group Management
-chatRoutes.post("/groups/:id/participants", chatController.addParticipants);
-chatRoutes.delete("/groups/:id/participants/:userId", chatController.removeParticipant);
+  // Group Management
+  routes.post(
+    "/groups/:id/participants",
+    validator("json", AddParticipantSchema),
+    controller.addParticipants,
+  );
+  routes.delete(
+    "/groups/:id/participants/:userId",
+    controller.removeParticipant,
+  );
 
-// Messages
-chatRoutes.post("/conversations/:id/messages", chatController.sendMessage);
-chatRoutes.get("/conversations/:id/messages", chatController.getMessages);
+  // Messages
+  routes.post(
+    "/conversations/:id/messages",
+    validator("json", SendMessageSchema),
+    controller.sendMessage,
+  );
+  routes.get("/conversations/:id/messages", controller.getMessages);
 
-// Media
-chatRoutes.post("/upload", chatController.uploadFile);
+  // Media
+  // TODO: Add media validation
+  routes.post("/upload", validator("form", UploadFileSchema), controller.uploadFile);
 
-// LiveKit
-// :id in this context is the conversation ID or room ID
-chatRoutes.get("/calls/:id/token", chatController.getCallToken);
-chatRoutes.post("/conversations/:id/call", chatController.startCall);
-chatRoutes.post("/calls/:id/end", chatController.endCall);
+  // LiveKit
+  // :id in this context is the conversation ID or room ID
+  routes.get("/calls/:id/token", controller.getCallToken);
+  routes.post("/conversations/:id/call", controller.startCall);
+  routes.post("/calls/:id/end", controller.endCall);
 
+  return routes;
+};
