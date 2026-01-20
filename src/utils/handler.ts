@@ -6,7 +6,11 @@ import type {
   PaginationMeta,
 } from "~/model";
 
-interface HandlerContext<TBody = unknown, TClaim = unknown, TQuery = Record<string, string | undefined>> {
+interface HandlerContext<
+  TBody = unknown,
+  TClaim = unknown,
+  TQuery = Record<string, string | undefined>,
+> {
   // ctx: Context<{ Variables: Variables }>; // Global context dont expose on production only for testing and development
   state: Variables["state"];
   log: Variables["log"];
@@ -14,6 +18,7 @@ interface HandlerContext<TBody = unknown, TClaim = unknown, TQuery = Record<stri
   query: TQuery;
   body: TBody;
   claim: TClaim | null;
+  header: Record<string, string>;
   httpResponse: (
     data: unknown,
     message?: string,
@@ -30,32 +35,34 @@ interface HandlerContext<TBody = unknown, TClaim = unknown, TQuery = Record<stri
 export const createHandler = <
   TBody = unknown,
   TClaim = unknown,
-  TQuery = Record<string, string | undefined>
+  TQuery = Record<string, string | undefined>,
 >(
-  handler: (ctx: HandlerContext<TBody, TClaim, TQuery>) => Promise<Response> | Response,
+  handler: (
+    ctx: HandlerContext<TBody, TClaim, TQuery>,
+  ) => Promise<Response> | Response,
 ) => {
   return async (ctx: Context<{ Variables: Variables }>) => {
-    const params = ctx.req.param();
-    const query = ctx.req.query() as TQuery;
-    const state = ctx.var.state;
-    const log = ctx.var.log;
-    const jwtPayload = ctx.var.jwtPayload as TClaim;
-    const claim = jwtPayload ?? null;
     let body = null as TBody;
 
-    if (
-      ctx.req.method !== "GET" &&
-      ctx.req.header("Content-Type")?.includes("application/json")
-    ) {
+    if (ctx.req.method !== "GET") {
+      const contentType = ctx.req.header("Content-Type");
       try {
-        body = await ctx.req.json();  
-      } catch (_: unknown) {
+        if (contentType?.includes("application/json")) {
+          body = await ctx.req.json();
+        } else if (
+          contentType?.includes("multipart/form-data") ||
+          contentType?.includes("application/x-www-form-urlencoded")
+        ) {
+          body = (await ctx.req.parseBody()) as TBody;
+        }
+      } catch {
+        // Silently fail to null if parsing error occurs
         body = null as TBody;
       }
     }
 
-    const wrappedHttpResponse = <T>(
-      data: T,
+    const wrappedHttpResponse = (
+      data: unknown,
       message?: string,
       status: ContentfulStatusCode = 200,
       meta?: PaginationMeta,
@@ -69,12 +76,13 @@ export const createHandler = <
 
     return handler({
       // ctx, // Global context dont expose on production only for testing and development
-      state,
-      log,
-      params,
-      query,
+      state: ctx.var.state,
+      log: ctx.var.log,
+      params: ctx.req.param(),
+      query: ctx.req.query() as TQuery,
       body,
-      claim,
+      claim: (ctx.var.jwtPayload as TClaim) ?? null,
+      header: ctx.req.header(),
       httpResponse: wrappedHttpResponse,
       errorResponse: wrappedErrorResponse,
     });
