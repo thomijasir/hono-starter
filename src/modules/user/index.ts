@@ -1,19 +1,19 @@
 
 import { Hono } from "hono";
-import * as userController from "./controller";
+import * as controller from "./controller";
 import { GetUserParamSchema } from "./model";
 import { auth, validator } from "~/middlewares";
 import type { Variables } from "~/model";
 
 const routes = new Hono<{ Variables: Variables }>();
 
-routes.get("/", userController.getAllUsers);
-routes.get("/myinfo", auth, userController.getMyProfile);
+routes.get("/", controller.getAllUsers);
+routes.get("/myinfo", auth, controller.getMyProfile);
 routes.get(
   "/:id",
   auth,
   validator("param", GetUserParamSchema),
-  userController.getUser,
+  controller.getUser,
 );  
 
 export { routes as userRoutes };

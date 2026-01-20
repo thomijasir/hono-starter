@@ -1,18 +1,12 @@
-import { Hono } from "hono";
-import type { z } from "zod";
-import { CreatePostSchema, UpdatePostSchema } from "./model";
+import type { CreatePostPayload, UpdatePostPayload } from "./model";
 import * as postService from "./service";
-import { auth, validator } from "~/middlewares";
-import type { HandlerContext, Variables } from "~/model";
 import { createHandler } from "~/utils";
 
 export const getAllPosts = createHandler(
-  async ({ ctx, state, httpResponse }: HandlerContext) => {
-    const page = Number(ctx.req.query("page")) || 1;
-    const limit = Number(ctx.req.query("limit")) || 10;
-
+  async ({ query, state, httpResponse }) => {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
     const { posts, total } = await postService.getPosts(state, page, limit);
-
     return httpResponse(posts, "Posts fetched successfully", 200, {
       page,
       limit,
@@ -23,41 +17,36 @@ export const getAllPosts = createHandler(
 );
 
 export const getPost = createHandler(
-  async ({ state, params, httpResponse, errorResponse }: HandlerContext) => {
+  async ({ state, params, httpResponse, errorResponse }) => {
     const id = Number(params.id);
     const post = await postService.getPostById(state, id);
-
     if (!post) {
       return errorResponse("Post not found", 404);
     }
-
     return httpResponse(post);
   },
 );
 
-export const createPost = createHandler(
-  async ({ ctx, state, body, httpResponse }: HandlerContext) => {
-    // We can safely cast body because of the zValidator middleware
-    const payload = body as z.infer<typeof CreatePostSchema>;
-    const jwtPayload = ctx.var.jwtPayload as { id: number };
-
-    const post = await postService.createPost(state, jwtPayload.id, payload);
+export const createPost = createHandler<CreatePostPayload, { id: number }>(
+  async ({ state, body, claim, httpResponse, errorResponse }) => {
+    if (!claim) {
+      return errorResponse("Unauthorized", 401);
+    }
+    const post = await postService.createPost(state, claim.id, body);
     return httpResponse(post, "Post created successfully", 201);
   },
 );
 
-export const updatePost = createHandler(
+export const updatePost = createHandler<UpdatePostPayload, { id: number }>(
   async ({
-    ctx,
     state,
     params,
     body,
+    claim,
     httpResponse,
     errorResponse,
-  }: HandlerContext) => {
+  }) => {
     const id = Number(params.id);
-    const jwtPayload = ctx.var.jwtPayload as { id: number };
-
     // Check if post exists
     const existingPost = await postService.getPostById(state, id);
     if (!existingPost) {
@@ -65,27 +54,28 @@ export const updatePost = createHandler(
     }
 
     // Check ownership
-    if (existingPost.authorId !== jwtPayload.id) {
+    if (!claim) {
+      return errorResponse("Unauthorized", 401);
+    }
+    if (existingPost.authorId !== claim.id) {
       return errorResponse("Forbidden", 403);
     }
 
-    const payload = body as z.infer<typeof UpdatePostSchema>;
-    const post = await postService.updatePost(state, id, payload);
+    const post = await postService.updatePost(state, id, body);
 
     return httpResponse(post, "Post updated successfully");
   },
 );
 
-export const deletePost = createHandler(
+export const deletePost = createHandler<null, { id: number }>(
   async ({
-    ctx,
     state,
     params,
+    claim,
     httpResponse,
     errorResponse,
-  }: HandlerContext) => {
+  }) => {
     const id = Number(params.id);
-    const jwtPayload = ctx.var.jwtPayload as { id: number };
 
     // Check if post exists
     const existingPost = await postService.getPostById(state, id);
@@ -94,7 +84,10 @@ export const deletePost = createHandler(
     }
 
     // Check ownership
-    if (existingPost.authorId !== jwtPayload.id) {
+    if (!claim) {
+      return errorResponse("Unauthorized", 401);
+    }
+    if (existingPost.authorId !== claim.id) {
       return errorResponse("Forbidden", 403);
     }
 
@@ -102,13 +95,3 @@ export const deletePost = createHandler(
     return httpResponse(null, "Post deleted successfully");
   },
 );
-
-const routes = new Hono<{ Variables: Variables }>();
-
-routes.get("/", getAllPosts);
-routes.get("/:id", getPost);
-routes.post("/", auth, validator("json", CreatePostSchema), createPost);
-routes.patch("/:id", auth, validator("json", UpdatePostSchema), updatePost);
-routes.delete("/:id", auth, deletePost);
-
-export { routes as postRoutes };

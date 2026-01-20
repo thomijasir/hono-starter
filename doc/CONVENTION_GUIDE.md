@@ -41,11 +41,11 @@ We use a custom `createHandler` utility to standardize request handling and depe
 ### Usage
 
 ```typescript
-import { createHandler, HandlerContext } from "~/utils";
+import { createHandler } from "~/utils";
 import * as service from "./service";
 
 export const getItems = createHandler(
-  async ({ ctx, query, httpResponse }: HandlerContext) => {
+  async ({ query, httpResponse }) => {
     // Access parsed query params
     const page = Number(query.page) || 1;
     const items = await service.fetchAll(page);

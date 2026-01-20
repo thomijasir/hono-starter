@@ -1,16 +1,15 @@
 import * as userService from "./service";
-import type { HandlerContext } from "~/model";
 import { createHandler } from "~/utils";
 
 export const getAllUsers = createHandler(
-  async ({ state, httpResponse }: HandlerContext) => {
+  async ({ state, httpResponse }) => {
     const users = await userService.getUsers(state);
     return httpResponse(users);
   },
 );
 
 export const getUser = createHandler(
-  async ({ state, params, httpResponse, errorResponse }: HandlerContext) => {
+  async ({ state, params, httpResponse, errorResponse }) => {
     const id = Number(params.id);
     const user = await userService.getUserById(state, id);
 
@@ -22,9 +21,8 @@ export const getUser = createHandler(
   },
 );
 
-export const getMyProfile = createHandler(
-  ({ ctx, httpResponse }: HandlerContext) => {
-    const payload = ctx.var.jwtPayload as Record<string, string>;
-    return httpResponse(payload);
+export const getMyProfile = createHandler<unknown, { id: number }>(
+  ({ httpResponse, claim }) => {
+    return httpResponse(claim);
   },
 );
