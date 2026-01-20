@@ -4,6 +4,7 @@ import { sign } from "hono/jwt";
 import type { LoginPayload, RegisterPayload } from "./model";
 import type { AppState } from "~/model";
 import { users } from "~/schemas/default";
+import { HTTPException } from "hono/http-exception";
 
 export const login = async (state: AppState, payload: LoginPayload) => {
   const db = state.db as BunSQLiteDatabase;
@@ -13,7 +14,9 @@ export const login = async (state: AppState, payload: LoginPayload) => {
     .where(eq(users.email, payload.email));
 
   if (!user) {
-    throw new Error("Invalid email or password");
+    throw new HTTPException(400, {
+      message: "Invalid email or password",
+    });
   }
 
   const isMatch = await Bun.password.verify(payload.password, user.password);
@@ -22,12 +25,15 @@ export const login = async (state: AppState, payload: LoginPayload) => {
     throw new Error("Invalid email or password");
   }
 
+  const now = Math.floor(Date.now() / 1000);
+
   const token = await sign(
     {
-      id: user.id,
+      sub: user.id,
       email: user.email,
       name: user.name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
+      iat: now,
+      exp: now + 60 * 60 * 24, // 1 day
     },
     state.config.jwtSecret,
   );

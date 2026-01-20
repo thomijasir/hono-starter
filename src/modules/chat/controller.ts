@@ -11,7 +11,7 @@ import { createHandler, createFormHandler, createJsonHandler } from "~/utils";
 export const connect = createJsonHandler<ConnectPayload>(
   ({ state, body, httpResponse }) => {
     const user = service.connectUser(state, body);
-    return httpResponse(user, "Connected successfully");
+    return httpResponse(user, "Connected");
   },
 );
 

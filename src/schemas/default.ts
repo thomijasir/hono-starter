@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
+// user for manage chat portal
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -31,27 +32,36 @@ export const posts = sqliteTable("posts", {
 
 // Chat System Schema
 
-export const chatUsers = sqliteTable(
-  "chat_users",
-  {
-    id: text("id").primaryKey(), // We'll use UUID or composite key logic, but simple ID is easier for referencing
-    appId: text("app_id").notNull(),
-    userId: text("user_id").notNull(), // External User ID from the tenant app
-    name: text("name"),
-    avatar: text("avatar"),
-    email: text("email"),
-    lastSeen: text("last_seen"),
-    deviceToken: text("device_token"),
-    deviceType: text("device_type"), // android, ios
-    createdAt: text("created_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updatedAt: text("updated_at")
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-  },
-  // TODO: Add unique index on (appId, userId) when Drizzle supports it easily in single define or via extra config
-);
+export const appClient = sqliteTable("app_client", {
+  id: text("id").primaryKey(),
+  name: text("name"), // APP Name
+  createdAt: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+});
+
+export const chatUsers = sqliteTable("chat_users", {
+  id: text("id").primaryKey(), // We'll use UUID or composite key logic, but simple ID is easier for referencing
+  appId: text("app_id")
+    .references(() => appClient.id)
+    .notNull(),
+  userId: text("user_id").notNull(), // External User ID from the tenant app
+  name: text("name"),
+  avatar: text("avatar"),
+  email: text("email"),
+  lastSeen: text("last_seen"),
+  deviceToken: text("device_token"),
+  deviceType: text("device_type"), // android, ios
+  createdAt: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+});
 
 export const conversations = sqliteTable("conversations", {
   id: text("id").primaryKey(),

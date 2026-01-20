@@ -7,7 +7,7 @@ export const login = createJsonHandler<LoginPayload>(
   async ({ body, state, httpResponse }) => {
     const payload = body;
     const token = await authService.login(state, payload);
-    return httpResponse(token, "Login successful");
+    return httpResponse(token, "AUTHENTICATED");
   },
 );
 
@@ -19,7 +19,7 @@ export const register = createJsonHandler<RegisterPayload>(
   },
 );
 
-export const logout = createHandler(({ httpResponse } ) => {
+export const logout = createHandler(({ httpResponse }) => {
   // await authService.logout(state);
   return httpResponse(null, "Logout successful");
 });
