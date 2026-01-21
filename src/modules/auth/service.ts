@@ -1,58 +1,40 @@
 import { eq } from "drizzle-orm";
-import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { sign } from "hono/jwt";
-import { resultAsync } from "~/utils";
-import type { LoginPayload, RegisterPayload } from "./model";
-import type { AppState } from "~/model";
+import { ResultAsync } from "neverthrow";
+import type { User } from "../user/model";
+import type { RegisterPayload } from "./model";
+import { EXPIRED_TOKEN } from "~/constants";
+import { JwtSignError  } from "~/model";
+import type {AppState} from "~/model";
 import { users } from "~/schemas/default";
-import { Err, Ok, Result } from "ts-results";
 
-export const login = async (
-  { db, config }: AppState,
-  payload: LoginPayload,
-): Promise<Result<{ token: string }, Error>> => {
-  const userResult = await resultAsync(
-    db.select().from(users).where(eq(users.email, payload.email)),
+
+export const signToken = async (user: User, secret: string) => {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    iat: now,
+    exp: now + EXPIRED_TOKEN,
+  };
+  return ResultAsync.fromPromise(
+    sign(payload, secret),
+    () => new JwtSignError(),
   );
-
-  const user = userResult
-    .andThen((u) => Ok(u[0]))
-    .mapErr(() => new Error("database error"))
-    .unwrap();
-
-  if (!user) return Err(new Error("user notfound"));
-
-  const matchResult = await resultAsync(
-    Bun.password.verify(payload.password, user.password),
-  );
-  if (matchResult.err) return matchResult;
-  if (!matchResult.val) return Err(new Error("Invalid credentials"));
-
-  const tokenResult = await resultAsync(
-    sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
-      },
-      config.jwtSecret,
-    ),
-  );
-
-  if (tokenResult.err) return tokenResult;
-
-  return Ok({ token: tokenResult.val });
 };
 
-export const register = async (state: AppState, payload: RegisterPayload) => {
-  const db = state.db as BunSQLiteDatabase;
+export const register = async (
+  { db, config }: AppState,
+  payload: RegisterPayload,
+) => {
   const [existingUser] = await db
     .select()
     .from(users)
     .where(eq(users.email, payload.email));
 
   if (existingUser) {
+    // eslint-disable-next-line functional/no-throw-statements
     throw new Error("User already exists");
   }
 
@@ -71,6 +53,7 @@ export const register = async (state: AppState, payload: RegisterPayload) => {
     .returning();
 
   if (!newUser) {
+    // eslint-disable-next-line functional/no-throw-statements
     throw new Error("Failed to register user");
   }
 
@@ -81,7 +64,7 @@ export const register = async (state: AppState, payload: RegisterPayload) => {
       name: newUser.name,
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
     },
-    state.config.jwtSecret,
+    config.jwtSecret,
   );
 
   return { token };

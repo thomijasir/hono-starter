@@ -1,12 +1,13 @@
 import js from "@eslint/js";
 import honoBaseConfig from "@hono/eslint-config";
 import prettier from "eslint-config-prettier";
+import functional from "eslint-plugin-functional";
+import eslintImport from "eslint-plugin-import";
+import nodePlugin from "eslint-plugin-n";
+import neverthrow from "eslint-plugin-neverthrow";
+import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import tseslint from "typescript-eslint";
-import eslintImport from "eslint-plugin-import";
-import unicorn from "eslint-plugin-unicorn";
-import nodePlugin from "eslint-plugin-n";
-import functional from "eslint-plugin-functional";
 
 export default [
   {
@@ -34,6 +35,7 @@ export default [
       import: eslintImport,
       unicorn, // File Name Convetion
       functional, // handle proper name and function
+      neverthrow,
     },
     // CRITICAL: Tell ESLint how to resolve "@/..." paths using your tsconfig
     settings: {

@@ -1,5 +1,3 @@
-import { Err, Ok } from "ts-results";
-import type { Result } from "ts-results";
 import { httpResponse, errorResponse } from "./response";
 import type {
   ContentfulStatusCode,
@@ -47,13 +45,13 @@ const executeRequest = async <
 ) => {
   const wrappedHttpResponse = (
     data: unknown,
-    message?: string,
+    message: string = "success",
     status: ContentfulStatusCode = 200,
     meta?: PaginationMeta,
   ) => httpResponse(ctx, data, message, status, meta);
 
   const wrappedErrorResponse = (
-    message?: string,
+    message: string = "failed",
     status: ContentfulStatusCode = 500,
     errors?: unknown,
   ) => errorResponse(ctx, message, status, errors);
@@ -122,17 +120,4 @@ export const createFormHandler = <
     }
     return executeRequest(ctx, handler, body);
   };
-};
-
-export const resultAsync = <T, E = Error>(
-  promise: Promise<T>,
-): Promise<Result<T, E>> =>
-  promise.then((data) => Ok(data)).catch((error: unknown) => Err(error as E));
-
-export const result = <T, E = Error>(fn: () => T): Result<T, E> => {
-  try {
-    return Ok(fn());
-  } catch (error) {
-    return Err(error as E);
-  }
 };
