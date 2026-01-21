@@ -1,22 +1,27 @@
 /**
- * The Result Type: A Tuple.
- * Index 0 is the Error (or null).
- * Index 1 is the Value (or null).
+ * The Result Type: A Discriminated Union.
  */
-export type ResultType<T, E = Error> = [E, null] | [null, T];
+export type ResultType<T, E = Error> =
+  | { ok: true; val: T }
+  | { ok: false; err: E };
+
+/**
+ * The Result Async Type: A Discriminated Union.
+ */
+export type ResultAsyncType<T, E = Error> = Promise<ResultType<T, E>>;
 
 /**
  * Helper to create a Success Result
  */
-export const Ok = <T,>(value: T): ResultType<T, never> => {
-  return [null, value];
+export const Ok = <T>(value: T): ResultType<T, never> => {
+  return { ok: true, val: value };
 };
 
 /**
  * Helper to create a Failure Result
  */
-export const Err = <E,>(error: E): ResultType<never, E> => {
-  return [error, null];
+export const Err = <E>(error: E): ResultType<never, E> => {
+  return { ok: false, err: error };
 };
 
 /**
@@ -25,30 +30,28 @@ export const Err = <E,>(error: E): ResultType<never, E> => {
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Result {
   /**
-   * Wraps a Promise. Catches rejection and returns a Tuple Result.
-   * Usage: const [err, data] = await ResultHandler.async(somePromise);
+   * Wraps a Promise. Catches rejection and returns a Result Object.
+   * Usage: const result = await Result.async(somePromise);
    */
-  static async async<T, E = Error>(
-    promise: Promise<T>,
-  ): Promise<ResultType<T, E>> {
+  static async async<T, E = Error>(promise: Promise<T>): ResultAsyncType<T, E> {
     try {
       const data = await promise;
-      return [null, data];
+      return { ok: true, val: data };
     } catch (err) {
-      return [err as E, null];
+      return { ok: false, err: err as E };
     }
   }
 
   /**
    * Wraps a Synchronous function that might throw.
-   * Usage: const [err, data] = ResultHandler.sync(() => JSON.parse(str));
+   * Usage: const result = Result.sync(() => JSON.parse(str));
    */
   static sync<T, E = Error>(fn: () => T): ResultType<T, E> {
     try {
       const data = fn();
-      return [null, data];
+      return { ok: true, val: data };
     } catch (err) {
-      return [err as E, null];
+      return { ok: false, err: err as E };
     }
   }
 }

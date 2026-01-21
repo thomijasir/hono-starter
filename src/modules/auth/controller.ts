@@ -1,40 +1,29 @@
-import { sign } from "hono/jwt";
 import { findUserByEmail } from "../user/repository";
 import type { LoginPayload, RegisterPayload } from "./model";
-import * as authService from "./service";
-
+import { signToken } from "./service";
 import { createJsonHandler, createHandler, verifyPassword } from "~/utils";
 
 export const login = createJsonHandler<LoginPayload>(
   async ({ body, state, httpResponse, errorResponse }) => {
-    const [userErr, userRes] = await findUserByEmail(state, body.email);
-    if (userErr) {
-      return errorResponse(userErr, 500);
+    const userResult = await findUserByEmail(state, body.email);
+    if (!userResult.ok) {
+      return errorResponse(userResult.err, 500);
     }
-    if (!userRes) {
+    const user = userResult.val;
+    const matchResult = await verifyPassword(body.password, user.password);
+    if (!matchResult.ok || !matchResult.val) {
       return errorResponse("Invalid email or password", 401);
     }
-    const [_, match] = await verifyPassword(body.password, userRes.password);
-    if (!match) {
-      return errorResponse("Invalid email or password", 401);
+    const token = await signToken(user, state.config.jwtSecret);
+    if (!token.ok) {
+      return errorResponse(token.err, 500);
     }
-    const token = await sign(
-      {
-        id: userRes.id,
-        email: userRes.email,
-        name: userRes.name,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
-      },
-      state.config.jwtSecret,
-    );
     return httpResponse({ token }, "Login successful");
   },
 );
 
 export const register = createJsonHandler<RegisterPayload>(
   async ({ body, state, httpResponse }) => {
-    const payload = body;
-    const token = await authService.register(state, payload);
     return httpResponse(token, "Registration successful", 201);
   },
 );

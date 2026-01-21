@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
@@ -14,6 +15,8 @@ export const users = sqliteTable("users", {
     .notNull(),
 });
 
+export type UserModel = InferSelectModel<typeof users>;
+
 export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
@@ -28,3 +31,5 @@ export const posts = sqliteTable("posts", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
 });
+
+export type PostModel = InferSelectModel<typeof posts>;

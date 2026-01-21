@@ -4,35 +4,24 @@ import { sign } from "hono/jwt";
 import type { LoginPayload, RegisterPayload } from "./model";
 import type { AppState } from "~/model";
 import { users } from "~/schemas/default";
+import { EXPIRED_TOKEN } from "~/constants";
+import type { User } from "../user/model";
+import { Err, Ok, Result } from "~/utils";
 
-export const login = async (state: AppState, payload: LoginPayload) => {
-  const db = state.db as BunSQLiteDatabase;
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.email, payload.email));
-
-  if (!user) {
-    throw new Error("Invalid email or password");
+export const signToken = async (user: User, secret: string) => {
+  const now = Math.floor(Date.now() / 1000);
+  const payload = {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    iat: now,
+    exp: now + EXPIRED_TOKEN,
+  };
+  const result = await Result.async(sign(payload, secret));
+  if (!result.ok) {
+    return Err("failure sign secrets");
   }
-
-  const isMatch = await Bun.password.verify(payload.password, user.password);
-
-  if (!isMatch) {
-    throw new Error("Invalid email or password");
-  }
-
-  const token = await sign(
-    {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day
-    },
-    state.config.jwtSecret,
-  );
-
-  return { token };
+  return Ok(result.val);
 };
 
 export const register = async (state: AppState, payload: RegisterPayload) => {
