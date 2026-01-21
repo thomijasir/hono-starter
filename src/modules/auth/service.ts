@@ -42,7 +42,7 @@ export const login = async (
 
   if (tokenResult.err) return tokenResult;
 
-  return new Ok({ token: tokenResult.val });
+  return Ok({ token: tokenResult.val });
 };
 
 export const register = async (state: AppState, payload: RegisterPayload) => {
