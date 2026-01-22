@@ -18,10 +18,10 @@ The design is built around three pillars of strictness:
 graph LR
     Request --> Server[Bun Server]
     Server --> App[Hono Application]
-    App --> Middleware[Middlewares (Auth, Logger, State)]
+    App --> Middleware["Middlewares (Auth, Logger, State)"]
     Middleware --> Router{Route Match?}
 
-    Router -- Yes --> Module[Feature Module (Users, Posts)]
+    Router -- Yes --> Module["Feature Module (Users, Posts)"]
     Module --> Controller[Controller Logic]
     Controller --> Service[Service Layer]
     Controller --> Repository[Repository Layer]
