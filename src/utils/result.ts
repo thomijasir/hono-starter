@@ -1,4 +1,51 @@
 /**
+ * @title Result Error Map
+ * @author Thomi Jasir<thomijasir@gmail.com>
+ * @description
+ * A robust, type-safe error handling utility inspired by Rust's `Result<T, E>` pattern.
+ *
+ * This module replaces standard `try/catch` blocks with a Discriminated Union pattern.
+ * It forces explicit error handling, making data flow more predictable and easier to debug.
+ *
+ * ## Concept
+ * instead of throwing exceptions that disrupt control flow, functions return a `Result` object:
+ * - `Ok(value)`: Represents a successful operation.
+ * - `Err(error)`: Represents a failure.
+ *
+ *
+ * ## Key Features
+ * - **Type Safety**: You cannot access the value without checking if the result is `ok`.
+ * - **Async Support**: Helpers to wrap Promises and async functions.
+ * - **Chaining**: "Railway Oriented Programming" style composition using `Result.chain`.
+ * - **Combination**: Handle lists of promises safely without `Promise.all` failing fast.
+ *
+ * @example
+ * // 1. Synchronous Usage (wrapping risky code)
+ * const parsed = Result.sync(() => JSON.parse('{"a":1}'));
+ * if (parsed.ok) {
+ * console.log(parsed.val.a); // TypeScript knows this is safe
+ * } else {
+ * console.error(parsed.err);
+ * }
+ *
+ * @example
+ * // 2. Asynchronous Usage
+ * const userResult = await Result.async(fetchUser(id));
+ * if (!userResult.ok) return; // Handle error early
+ * const user = userResult.val;
+ *
+ * @example
+ * // 3. Chaining (Railway Oriented Programming)
+ * // The chain stops execution at the first error encountered.
+ * const process = await Result.chain(
+ * Ok(5),
+ * (n) => Ok(n * 2),       // 10
+ * (n) => Err("Too high"), // Error occurs here
+ * (n) => Ok(n - 2)        // This is skipped
+ * );
+ * // process equals: { ok: false, err: "Too high" }
+ */
+/**
  * The Result Type: A Discriminated Union.
  */
 export type ResultType<T, E = Error> =
@@ -13,14 +60,14 @@ export type ResultAsyncType<T, E = Error> = Promise<ResultType<T, E>>;
 /**
  * Helper to create a Success Result
  */
-export const Ok = <T>(value: T): ResultType<T, never> => {
+export const Ok = <T,>(value: T): ResultType<T, never> => {
   return { ok: true, val: value };
 };
 
 /**
  * Helper to create a Failure Result
  */
-export const Err = <E>(error: E): ResultType<never, E> => {
+export const Err = <E,>(error: E): ResultType<never, E> => {
   return { ok: false, err: error };
 };
 
@@ -96,7 +143,26 @@ export class Result {
 
   /**
    * Chains multiple async operations.
-   * Usage: const res = await Result.chain(first, fn1, fn2);
+   *
+   * Usage:
+   * ```ts
+   * const res = await Result.chain(
+   *   Ok(1),
+   *   (n) => Ok(n + 1), // number -> number
+   *   (c) => Ok(c * 2), // number -> number
+   *   (n) => Ok(n.toString()), // number -> string
+   *   (s) => {
+   *      // Put custom logic
+   *      if(s.length){
+   *        return Ok(s.length)
+   *      }
+   *      return Err("empty length")
+   *    }, // string -> number
+   *   (n) => Ok(n > 3), // final result
+   * );
+   * ```
+   *
+   * Limit: This function supports chaining up to 5 functions.
    */
   static chain<T, T1, E>(
     first: Promise<ResultType<T, E>> | ResultType<T, E>,
@@ -120,6 +186,14 @@ export class Result {
     fn3: (val: T2) => Promise<ResultType<T3, E>> | ResultType<T3, E>,
     fn4: (val: T3) => Promise<ResultType<T4, E>> | ResultType<T4, E>,
   ): Promise<ResultType<T4, E>>;
+  static chain<T, T1, T2, T3, T4, T5, E>(
+    first: Promise<ResultType<T, E>> | ResultType<T, E>,
+    fn1: (val: T) => Promise<ResultType<T1, E>> | ResultType<T1, E>,
+    fn2: (val: T1) => Promise<ResultType<T2, E>> | ResultType<T2, E>,
+    fn3: (val: T2) => Promise<ResultType<T3, E>> | ResultType<T3, E>,
+    fn4: (val: T3) => Promise<ResultType<T4, E>> | ResultType<T4, E>,
+    fn5: (val: T4) => Promise<ResultType<T5, E>> | ResultType<T5, E>,
+  ): Promise<ResultType<T5, E>>;
   static async chain<T, E = Error>(
     first: Promise<ResultType<T, E>> | ResultType<T, E>,
     ...fns: ((

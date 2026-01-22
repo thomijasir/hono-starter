@@ -1,4 +1,4 @@
-import { createNewUser, findUserByEmail } from "../user/repository";
+import { findUserByEmail, saveNewUser } from "../user/repository";
 import type { LoginPayload, RegisterPayload } from "./model";
 import { signToken } from "./service";
 import type { UserModel } from "~/schemas/default";
@@ -11,12 +11,11 @@ import {
   Ok,
   Err,
 } from "~/utils";
-import type { ResultType } from "~/utils";
 
 // Pipe handle method (recommend for simple operation and most cases)
 export const login = createJsonHandler<LoginPayload>(
   async ({ body, state, httpResponse, errorResponse }) => {
-    const chainResult = (await Result.chain(
+    const chainResult = await Result.chain(
       findUserByEmail(state, body.email),
       async (user: UserModel) => {
         const matchResult = await verifyPassword(body.password, user.password);
@@ -25,10 +24,8 @@ export const login = createJsonHandler<LoginPayload>(
         }
         return Ok(user);
       },
-      async (user: UserModel) => {
-        return signToken(user, state.config.jwtSecret);
-      },
-    )) as ResultType<UserModel, string>;
+      (user: UserModel) => signToken(user, state.config.jwtSecret),
+    );
 
     if (!chainResult.ok) {
       return errorResponse(chainResult.err);
@@ -51,7 +48,7 @@ export const register = createJsonHandler<RegisterPayload>(
       return errorResponse("failed hashing password");
     }
 
-    const resultCreateUser = await createNewUser(state, {
+    const resultCreateUser = await saveNewUser(state, {
       ...body,
       password: createPassword.val,
     });

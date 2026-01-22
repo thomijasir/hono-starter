@@ -78,7 +78,7 @@ export const findUserByName = async (state: AppState, name: string) => {
   return Ok(foundUsers);
 };
 
-export const createNewUser = async (
+export const saveNewUser = async (
   state: AppState,
   user: CreateUserPayload,
 ): Promise<ResultType<UserModel, string>> => {
@@ -92,4 +92,38 @@ export const createNewUser = async (
     return Err("user not found");
   }
   return Ok(createdUser);
+};
+
+export const saveUser = async (
+  state: AppState,
+  id: number,
+  payload: CreateUserPayload,
+): Promise<ResultType<UserModel, string>> => {
+  const { db } = state;
+  const changeSet = {
+    ...payload,
+    updatedAt: new Date().toISOString(),
+  };
+  const result = await Result.async(
+    db.update(users).set(changeSet).where(eq(users.id, id)).returning(),
+  );
+  if (!result.ok) {
+    return Err("failed update user");
+  }
+  const updatedUser = result.val[0];
+  if (!updatedUser) {
+    return Err("failed update user");
+  }
+  return Ok(updatedUser);
+};
+
+export const findAllUsers = async (
+  state: AppState,
+): Promise<ResultType<UserModel[], string>> => {
+  const { db } = state;
+  const result = await Result.async(db.select().from(users));
+  if (!result.ok) {
+    return Err("database error");
+  }
+  return Ok(result.val);
 };
