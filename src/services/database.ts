@@ -42,6 +42,7 @@ export class DBSqlService {
   constructor(driver: "PGSQL" | "MYSQL", url: string) {
     this.driver = driver;
     if (!url) {
+      // eslint-disable-next-line functional/no-throw-statements
       throw new Error(`Database URL is required for driver: ${driver}`);
     }
     this.client = new SQL(url);

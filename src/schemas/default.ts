@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { InferSelectModel } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // user for manage chat portal
@@ -14,6 +15,8 @@ export const users = sqliteTable("users", {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
 });
+
+export type UserModel = InferSelectModel<typeof users>;
 
 export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -122,3 +125,4 @@ export const calls = sqliteTable("calls", {
     .references(() => chatUsers.id)
     .notNull(),
 });
+export type PostModel = InferSelectModel<typeof posts>;

@@ -18,13 +18,15 @@ The design is built around three pillars of strictness:
 graph LR
     Request --> Server[Bun Server]
     Server --> App[Hono Application]
-    App --> Middleware[Middlewares (Auth, Logger, State)]
+    App --> Middleware["Middlewares (Auth, Logger, State)"]
     Middleware --> Router{Route Match?}
 
-    Router -- Yes --> Module[Feature Module (Users, Posts)]
+    Router -- Yes --> Module["Feature Module (Users, Posts)"]
     Module --> Controller[Controller Logic]
     Controller --> Service[Service Layer]
-    Service --> DB[(Database/State)]
+    Controller --> Repository[Repository Layer]
+    Service --> Repository
+    Repository --> DB[(Database/State)]
 
     Router -- No --> StaticHandler[Static File Handler]
     StaticHandler --> FileSystem[Read from public/]
@@ -60,8 +62,9 @@ The router prioritizes API logic while supporting static assets for landing page
 
 Each feature (e.g., `users`) is a self-contained unit following strict layers:
 -   **`model.ts`**: Zod Schemas and TypeScript Types. **No logic.**
--   **`service.ts`**: Pure Business Logic. Database interactions. **No HTTP knowledge.**
--   **`controller.ts`**: HTTP Layer. Handles Request/Response, calls Service. **Uses `createGetHandler`, `createJsonHandler`, etc.**
+-   **`repository.ts`**: Data Access Layer. SQL/Storage operations using Drizzle. **No business logic.**
+-   **`service.ts`**: Pure Business Logic. Orchestrates repositories, validation, and complex flows. **No HTTP knowledge.**
+-   **`controller.ts`**: HTTP Layer. Handles Request/Response, calls Service/Repository. **Uses `createHandler`, `createJsonHandler`, etc.**
 -   **`index.ts`**: Route definitions mapping paths to controllers.
 
 ### 5. Utilities (`src/utils/`)
@@ -69,8 +72,9 @@ Each feature (e.g., `users`) is a self-contained unit following strict layers:
 Shared tools to enforce consistency:
 
 -   **Handler Generators**: Higher-order functions (`createHandler`, `createJsonHandler`, `createFormHandler`) that wrap controllers. They manage error handling, context injection, and strict type safety for request bodies.
--   **`response.ts`**: Enforces strict JSON envelopes (`data`, `meta`, `status`).
+-   **`response.ts`**: Enforces strict JSON envelopes (`success`, `data`, `meta`, `message`).
 -   **`log.ts`**: Structural logging utility.
+-   **`result.ts`**: Rust-inspired `Result` type pattern for robust error handling.
 
 ## Directory Structure
 

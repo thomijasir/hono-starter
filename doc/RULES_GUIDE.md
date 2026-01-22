@@ -34,7 +34,7 @@ You MUST use the `createHandler` wrapper for all route controllers. This ensures
 // src/modules/user/controller.ts
 import { createHandler, HandlerContext } from "~/utils";
 
-export const getUser = createHandler(async ({ ctx, httpResponse }: HandlerContext) => {
+export const getUser = createHandler(async ({ httpResponse }: HandlerContext) => {
   // Logic here
   return httpResponse(data, "Success message");
 });
@@ -44,7 +44,7 @@ export const getUser = createHandler(async ({ ctx, httpResponse }: HandlerContex
 NEVER return raw JSON. ALWAYS use `httpResponse` or `errorResponse` helpers to ensure the standard envelope:
 ```json
 {
-  "status": "success", // or "error"
+  "success": true, // or false
   "message": "...",
   "data": { ... },
   "meta": { ... } // Optional
@@ -54,10 +54,11 @@ NEVER return raw JSON. ALWAYS use `httpResponse` or `errorResponse` helpers to e
 ### 3.3 Adding a New Feature (Module)
 1.  Create `src/modules/<feature_name>/`
 2.  Create `model.ts` (Zod schemas & TS types).
-3.  Create `service.ts` (Business logic).
-4.  Create `controller.ts` (HTTP handlers using `createHandler`).
-5.  Create `index.ts` (Hono Router definitions).
-6.  Mount the module in `src/routes.ts`.
+3.  Create `repository.ts` (Data access using Drizzle).
+4.  Create `service.ts` (Business logic, optional if simple).
+5.  Create `controller.ts` (HTTP handlers using `createHandler`).
+6.  Create `index.ts` (Hono Router definitions).
+7.  Mount the module in `src/routes.ts`.
 
 ## 4. Linting & Formatting
 -   The project uses **ESLint** and **Prettier**.

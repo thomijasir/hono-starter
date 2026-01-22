@@ -6,6 +6,13 @@ import type {
   PaginationMeta,
 } from "~/model";
 
+/**
+ * Interface representing the context provided to a request handler.
+ *
+ * @template TBody - The type of the request body. Defaults to `unknown`.
+ * @template TClaim - The type of the JWT claim (payload). Defaults to `unknown`.
+ * @template TQuery - The type of the query parameters. Defaults to `Record<string, string | undefined>`.
+ */
 interface HandlerContext<
   TBody = unknown,
   TClaim = unknown,
@@ -45,13 +52,13 @@ const executeRequest = async <
 ) => {
   const wrappedHttpResponse = (
     data: unknown,
-    message?: string,
+    message: string = "success",
     status: ContentfulStatusCode = 200,
     meta?: PaginationMeta,
   ) => httpResponse(ctx, data, message, status, meta);
 
   const wrappedErrorResponse = (
-    message?: string,
+    message: string = "failed",
     status: ContentfulStatusCode = 500,
     errors?: unknown,
   ) => errorResponse(ctx, message, status, errors);
@@ -69,6 +76,14 @@ const executeRequest = async <
   });
 };
 
+/**
+ * Creates a standard request handler for routes that do not require valid body parsing (e.g. GET requests).
+ *
+ * @template TClaim - The type of the JWT claim (payload).
+ * @template TQuery - The type of the query parameters.
+ * @param {function(Omit<HandlerContext<null, TClaim, TQuery>, "body">): Promise<Response> | Response} handler - The function to handle the request.
+ * @returns {function(Context<{ Variables: Variables }>): Promise<Response>} A Hono middleware function.
+ */
 export const createHandler = <
   TClaim = unknown,
   TQuery = Record<string, string | undefined>,
@@ -82,6 +97,16 @@ export const createHandler = <
   };
 };
 
+/**
+ * Creates a request handler for routes that expect a JSON body.
+ * It attempts to parse the request body as JSON. If parsing fails, the body is set to null.
+ *
+ * @template TBody - The expected type of the JSON body.
+ * @template TClaim - The type of the JWT claim (payload).
+ * @template TQuery - The type of the query parameters.
+ * @param {function(HandlerContext<TBody, TClaim, TQuery>): Promise<Response> | Response} handler - The function to handle the request.
+ * @returns {function(Context<{ Variables: Variables }>): Promise<Response>} A Hono middleware function.
+ */
 export const createJsonHandler = <
   TBody = unknown,
   TClaim = unknown,
@@ -102,6 +127,16 @@ export const createJsonHandler = <
   };
 };
 
+/**
+ * Creates a request handler for routes that expect form data.
+ * It attempts to parse the request body as form data. If parsing fails, the body is set to null.
+ *
+ * @template TBody - The expected type of the form body.
+ * @template TClaim - The type of the JWT claim (payload).
+ * @template TQuery - The type of the query parameters.
+ * @param {function(HandlerContext<TBody, TClaim, TQuery>): Promise<Response> | Response} handler - The function to handle the request.
+ * @returns {function(Context<{ Variables: Variables }>): Promise<Response>} A Hono middleware function.
+ */
 export const createFormHandler = <
   TBody = unknown,
   TClaim = unknown,
