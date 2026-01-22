@@ -1,8 +1,10 @@
 import { eq, like } from "drizzle-orm";
+import type { CreateUserPayload } from "./model";
 import type { AppState } from "~/model";
 import { users } from "~/schemas/default";
+import type { UserModel } from "~/schemas/default";
 import { Err, Ok, Result } from "~/utils";
-import type { User } from "./model";
+import type { ResultType } from "~/utils";
 
 /**
  * Finds a user by their email address.
@@ -11,7 +13,10 @@ import type { User } from "./model";
  * @param {string} email - The email address of the user to find.
  * @returns {Promise<Result<User, string>>} A Result containing the user if found, or an error message.
  */
-export const findUserByEmail = async (state: AppState, email: string) => {
+export const findUserByEmail = async (
+  state: AppState,
+  email: string,
+): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
   const userResult = await Result.async(
     db.select().from(users).where(eq(users.email, email)),
@@ -67,12 +72,24 @@ export const findUserByName = async (state: AppState, name: string) => {
     return Err("database error");
   }
   const foundUsers = userResult.val;
-  if (!foundUsers) {
+  if (foundUsers.length === 0) {
     return Err("user not found");
   }
   return Ok(foundUsers);
 };
 
-export const createNewUser = async (state: AppState, user: User) => {
+export const createNewUser = async (
+  state: AppState,
+  user: CreateUserPayload,
+): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
+  const result = await Result.async(db.insert(users).values(user).returning());
+  if (!result.ok) {
+    return Err("failed insert user");
+  }
+  const createdUser = result.val[0];
+  if (!createdUser) {
+    return Err("user not found");
+  }
+  return Ok(createdUser);
 };

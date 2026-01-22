@@ -1,34 +1,73 @@
-import { findUserByEmail } from "../user/repository";
+import { createNewUser, findUserByEmail } from "../user/repository";
 import type { LoginPayload, RegisterPayload } from "./model";
 import { signToken } from "./service";
-import { createJsonHandler, createHandler, verifyPassword } from "~/utils";
+import type { UserModel } from "~/schemas/default";
+import {
+  createJsonHandler,
+  createHandler,
+  verifyPassword,
+  passwordHash,
+  Result,
+  Ok,
+  Err,
+} from "~/utils";
+import type { ResultType } from "~/utils";
 
+// Pipe handle method (recommend for simple operation and most cases)
 export const login = createJsonHandler<LoginPayload>(
   async ({ body, state, httpResponse, errorResponse }) => {
-    const userResult = await findUserByEmail(state, body.email);
-    if (!userResult.ok) {
-      return errorResponse(userResult.err, 500);
+    const chainResult = (await Result.chain(
+      findUserByEmail(state, body.email),
+      async (user: UserModel) => {
+        const matchResult = await verifyPassword(body.password, user.password);
+        if (!matchResult.ok || !matchResult.val) {
+          return Err("invalid email or password");
+        }
+        return Ok(user);
+      },
+      async (user: UserModel) => {
+        return signToken(user, state.config.jwtSecret);
+      },
+    )) as ResultType<UserModel, string>;
+
+    if (!chainResult.ok) {
+      return errorResponse(chainResult.err);
     }
-    const user = userResult.val;
-    const matchResult = await verifyPassword(body.password, user.password);
-    if (!matchResult.ok || !matchResult.val) {
-      return errorResponse("Invalid email or password", 401);
-    }
-    const token = await signToken(user, state.config.jwtSecret);
-    if (!token.ok) {
-      return errorResponse(token.err, 500);
-    }
-    return httpResponse({ token }, "Login successful");
+
+    return httpResponse({ token: chainResult.val }, "login successful");
   },
 );
 
+// Standard handle (recommend for complex operation)
 export const register = createJsonHandler<RegisterPayload>(
-  async ({ body, state, httpResponse }) => {
-    return httpResponse(token, "Registration successful", 201);
+  async ({ body, state, httpResponse, errorResponse }) => {
+    const userResult = await findUserByEmail(state, body.email);
+    if (userResult.ok) {
+      return errorResponse("user already exist");
+    }
+
+    const createPassword = await passwordHash(body.password);
+    if (!createPassword.ok) {
+      return errorResponse("failed hashing password");
+    }
+
+    const resultCreateUser = await createNewUser(state, {
+      ...body,
+      password: createPassword.val,
+    });
+
+    if (!resultCreateUser.ok) {
+      return errorResponse(resultCreateUser.err);
+    }
+    const newUser = resultCreateUser.val;
+    const token = await signToken(newUser, state.config.jwtSecret);
+    if (!token.ok) {
+      return errorResponse(token.err);
+    }
+    return httpResponse({ token: token.val }, "registration successful", 201);
   },
 );
 
 export const logout = createHandler(({ httpResponse }) => {
-  // await authService.logout(state);
-  return httpResponse(null, "Logout successful");
+  return httpResponse(null, "logout successful");
 });

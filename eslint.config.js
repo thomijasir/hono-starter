@@ -4,6 +4,7 @@ import prettier from "eslint-config-prettier";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 import eslintImport from "eslint-plugin-import";
+import functional from "eslint-plugin-functional";
 import unicorn from "eslint-plugin-unicorn";
 import nodePlugin from "eslint-plugin-n";
 
@@ -31,6 +32,7 @@ export default [
     plugins: {
       node: nodePlugin, // This tells ESLint that "node/..." rules belong to this plugin
       import: eslintImport,
+      functional,
       unicorn, // File Name Convetion
     },
     // CRITICAL: Tell ESLint how to resolve "@/..." paths using your tsconfig
@@ -143,6 +145,9 @@ export default [
       /* 3. PREVENT CRASHES (Reliability Rule) */
       /* This detects if Module A imports B, and B imports A */
       "import/no-cycle": "error",
+      /* 3. ENFORCE "TYPES" IMPORTS */
+      /* Improves performance and safety for serverless/edge runtimes */
+      "@typescript-eslint/consistent-type-imports": "error",
       // Formatting handled by Prettier
       ...prettier.rules,
     },

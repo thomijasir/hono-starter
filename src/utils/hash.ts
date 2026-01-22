@@ -1,4 +1,5 @@
 import { Result } from "./result";
+import type { ResultAsyncType } from "./result";
 
 /**
  * Hashes a plain text password using bcrypt.
@@ -6,7 +7,7 @@ import { Result } from "./result";
  * @param {string} text - The password to hash.
  * @returns {Result<string, unknown>} A Result containing the hashed password or an error.
  */
-export const passwordHash = (text: string) =>
+export const passwordHash = (text: string): ResultAsyncType<string> =>
   Result.async(Bun.password.hash(text, { algorithm: "bcrypt", cost: 10 }));
 
 /**
@@ -16,5 +17,8 @@ export const passwordHash = (text: string) =>
  * @param {string} verifier - The hashed password to check against.
  * @returns {Result<boolean, unknown>} A Result containing true if the password matches, false otherwise, or an error.
  */
-export const verifyPassword = (password: string, verifier: string) =>
+export const verifyPassword = (
+  password: string,
+  verifier: string,
+): ResultAsyncType<boolean> =>
   Result.async(Bun.password.verify(password, verifier));
