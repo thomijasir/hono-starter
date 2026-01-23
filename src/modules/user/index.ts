@@ -56,7 +56,7 @@ export const userRoutes = () => {
     .openapi(
       createRoute({
         method: "get",
-        path: "/:id",
+        path: "/{id}",
         middleware: [auth] as const,
         request: {
           params: GetUserParamSchema,

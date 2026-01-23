@@ -60,14 +60,14 @@ export type ResultAsyncType<T, E = Error> = Promise<ResultType<T, E>>;
 /**
  * Helper to create a Success Result
  */
-export const Ok = <T,>(value: T): ResultType<T, never> => {
+export const Ok = <T>(value: T): ResultType<T, never> => {
   return { ok: true, val: value };
 };
 
 /**
  * Helper to create a Failure Result
  */
-export const Err = <E,>(error: E): ResultType<never, E> => {
+export const Err = <E>(error: E): ResultType<never, E> => {
   return { ok: false, err: error };
 };
 

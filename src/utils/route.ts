@@ -1,9 +1,23 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { jsonErrorResponseSchema } from "./response";
-import type { AppOpenApi, z } from "~/model";
+import z from "zod";
+import { jsonErrorResponseSchema, errorResponse } from "./response";
+import type { AppOpenApi } from "~/model";
 
 export const createRouter = () => {
-  const routes = new OpenAPIHono<AppOpenApi>({ strict: true });
+  const routes = new OpenAPIHono<AppOpenApi>({
+    strict: true,
+    defaultHook: (result, c) => {
+      if (!result.success) {
+        return errorResponse(
+          c,
+          "Validation Error",
+          400,
+          z.treeifyError(result.error),
+        );
+      }
+      return;
+    },
+  });
   return routes;
 };
 

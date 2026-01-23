@@ -46,4 +46,6 @@ export interface Variables {
   log: LogType;
 }
 
-export interface AppOpenApi { Variables: Variables }
+export interface AppOpenApi {
+  Variables: Variables;
+}

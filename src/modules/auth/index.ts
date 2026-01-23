@@ -1,5 +1,6 @@
 import * as controller from "./controller";
 import { AuthResponseSchema, LoginSchema, RegisterSchema } from "./model";
+import { validator } from "~/middlewares";
 import {
   jsonResponseSchema,
   jsonRequest,
@@ -15,6 +16,7 @@ export const authRoutes = () => {
       createRoute({
         method: "post",
         path: "/login",
+        middleware: [validator("json", LoginSchema)],
         request: jsonRequest(LoginSchema),
         responses: createResponses(
           successResponseSchema,

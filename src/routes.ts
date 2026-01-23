@@ -75,7 +75,6 @@ export const createApp = (state: AppState) => {
     Scalar({
       url: "/doc",
       theme: "kepler",
-      layout: "classic",
       defaultHttpClient: {
         targetKey: "js",
         clientKey: "fetch",

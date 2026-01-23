@@ -35,4 +35,3 @@ export const initializeState = async (): Promise<AppState> => {
   log.info("Application State Initialized.");
   return Promise.resolve(Object.freeze(state));
 };
-

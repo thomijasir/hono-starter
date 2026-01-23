@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 coverage
+drizzle
 
 # Editor directories and files
 .vscode/*

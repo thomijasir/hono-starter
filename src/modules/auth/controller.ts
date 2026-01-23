@@ -15,7 +15,7 @@ import {
 // Pipe handle method (recommend for simple operation and most cases)
 export const login = createJsonHandler<LoginPayload, AuthResponse>(
   async (props) => {
-    const { body, state, httpResponse, errorResponse } = props
+    const { body, state, httpResponse, errorResponse } = props;
     const chainResult = await Result.chain(
       findUserByEmail(state, body.email),
       async (user: UserModel) => {

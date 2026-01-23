@@ -98,11 +98,7 @@ export const createHandler = <
   ) => Promise<Response> | Response,
 ): Handler<E, P> => {
   return async (ctx: Context<E, P>) => {
-    return executeRequest(
-      ctx,
-      handler,
-      null,
-    );
+    return executeRequest(ctx, handler, null);
   };
 };
 
@@ -136,11 +132,7 @@ export const createJsonHandler = <
     } catch {
       body = null as TBody;
     }
-    return executeRequest(
-      ctx,
-      handler,
-      body,
-    );
+    return executeRequest(ctx, handler, body);
   };
 };
 
@@ -174,10 +166,6 @@ export const createFormHandler = <
     } catch {
       body = null as TBody;
     }
-    return executeRequest(
-      ctx,
-      handler,
-      body,
-    );
+    return executeRequest(ctx, handler, body);
   };
 };

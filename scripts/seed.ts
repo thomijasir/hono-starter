@@ -14,15 +14,13 @@ const runSeed = async () => {
       cost: 4,
     });
     // Insert sample user
-    db
-      .insert(users)
+    db.insert(users)
       .values({
         name: "Test User",
         email: "test@example.com",
         password: hashedPassword,
       })
       .run();
-
   } catch (error) {
     console.error("❌ Seeding failed:", error);
   }
@@ -30,9 +28,11 @@ const runSeed = async () => {
   sqlite.close();
 };
 
-runSeed().then(() => {
-  console.log("✅ Seed data created successfully");
-}).catch(() => {
-  // eslint-disable-next-line n/no-process-exit
-  process.exit(1);
-});
+runSeed()
+  .then(() => {
+    console.log("✅ Seed data created successfully");
+  })
+  .catch(() => {
+    // eslint-disable-next-line n/no-process-exit
+    process.exit(1);
+  });

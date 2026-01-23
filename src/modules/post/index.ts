@@ -39,7 +39,7 @@ export const postRoutes = () => {
     .openapi(
       createRoute({
         method: "get",
-        path: "/:id",
+        path: "/{id}",
         request: {
           params: GetPostParamSchema,
         },
@@ -71,11 +71,11 @@ export const postRoutes = () => {
     .openapi(
       createRoute({
         method: "patch",
-        path: "/:id",
+        path: "/{id}",
         middleware: [auth],
         request: {
           params: GetPostParamSchema,
-          ...jsonRequest(UpdatePostSchema).body,
+          body: jsonRequest(UpdatePostSchema).body,
         },
         responses: createResponses(postResponseSchema, "Update post", 200, {
           401: {
@@ -96,7 +96,7 @@ export const postRoutes = () => {
     .openapi(
       createRoute({
         method: "delete",
-        path: "/:id",
+        path: "/{id}",
         middleware: [auth] as const,
         request: {
           params: GetPostParamSchema,

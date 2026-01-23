@@ -18,11 +18,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint src/ && tsc --noEmit",
-    "lint:fix": "eslint src/ --fix && tsc --noEmit --fix",
+    "lint:fix": "eslint src/ --fix && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
-    "db:migrate:code": "bun scripts/migrate.ts",
-    "db:studio": "drizzle-kit studio"
+    "db:migrate:manual": "bun scripts/migrate.ts",
+    "db:studio": "drizzle-kit studio",
+    "db:up": "bun db:generate && bun db:migrate"
   },
   "dependencies": {
     "@hono/zod-openapi": "^1.2.0",
