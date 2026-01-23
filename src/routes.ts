@@ -10,7 +10,6 @@ import { errorResponse, log } from "~/utils";
 
 export const createApp = (state: AppState) => {
   const app = new Hono<{ Variables: Variables }>();
-
   // Inject State Middleware
   app
     .use(requestId())
@@ -46,9 +45,9 @@ export const createApp = (state: AppState) => {
   // Note: If modules need type-safe access to 'state',
   // they should also be defined with Hono<{ Variables: Variables }>
   // or use the generic Handler type.
-  app.route("/user", userRoutes);
-  app.route("/post", postRoutes);
-  app.route("/auth", authRoutes);
+  app.route("/user", userRoutes());
+  app.route("/post", postRoutes());
+  app.route("/auth", authRoutes());
 
   app.all("*", async (c) => {
     try {
