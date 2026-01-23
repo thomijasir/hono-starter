@@ -1,10 +1,6 @@
+import type { Context, Handler, Env } from "hono";
 import { httpResponse, errorResponse } from "./response";
-import type {
-  ContentfulStatusCode,
-  Context,
-  Variables,
-  PaginationMeta,
-} from "~/model";
+import type { ContentfulStatusCode, Variables, PaginationMeta } from "~/model";
 
 /**
  * Interface representing the context provided to a request handler.
@@ -15,6 +11,7 @@ import type {
  */
 interface HandlerContext<
   TBody = unknown,
+  TResponse = unknown,
   TClaim = unknown,
   TQuery = Record<string, string | undefined>,
 > {
@@ -27,7 +24,7 @@ interface HandlerContext<
   claim: TClaim | null;
   header: Record<string, string>;
   httpResponse: (
-    data: unknown,
+    data: TResponse,
     message?: string,
     status?: ContentfulStatusCode,
     meta?: PaginationMeta,
@@ -41,17 +38,20 @@ interface HandlerContext<
 
 const executeRequest = async <
   TBody,
+  TResponse,
   TClaim,
   TQuery = Record<string, string | undefined>,
+  E extends Env = { Variables: Variables },
+  P extends string = string,
 >(
-  ctx: Context<{ Variables: Variables }>,
+  ctx: Context<E, P>,
   handler: (
-    ctx: HandlerContext<TBody, TClaim, TQuery>,
+    handleContext: HandlerContext<TBody, TResponse, TClaim, TQuery>,
   ) => Promise<Response> | Response,
   body: TBody,
 ) => {
   const wrappedHttpResponse = (
-    data: unknown,
+    data: TResponse,
     message: string = "success",
     status: ContentfulStatusCode = 200,
     meta?: PaginationMeta,
@@ -63,13 +63,15 @@ const executeRequest = async <
     errors?: unknown,
   ) => errorResponse(ctx, message, status, errors);
 
+  const vars = ctx.var as unknown as Variables & { jwtPayload?: TClaim };
+
   return handler({
-    state: ctx.var.state,
-    log: ctx.var.log,
-    params: ctx.req.param(),
+    state: vars.state,
+    log: vars.log,
+    params: ctx.req.param() as Record<string, string>,
     query: ctx.req.query() as TQuery,
     body,
-    claim: (ctx.var.jwtPayload as TClaim) ?? null,
+    claim: vars.jwtPayload ?? null,
     header: ctx.req.header(),
     httpResponse: wrappedHttpResponse,
     errorResponse: wrappedErrorResponse,
@@ -85,15 +87,22 @@ const executeRequest = async <
  * @returns {function(Context<{ Variables: Variables }>): Promise<Response>} A Hono middleware function.
  */
 export const createHandler = <
+  TResponse = unknown,
   TClaim = unknown,
   TQuery = Record<string, string | undefined>,
+  E extends Env = { Variables: Variables },
+  P extends string = string,
 >(
   handler: (
-    ctx: Omit<HandlerContext<null, TClaim, TQuery>, "body">,
+    ctx: Omit<HandlerContext<null, TResponse, TClaim, TQuery>, "body">,
   ) => Promise<Response> | Response,
-) => {
-  return async (ctx: Context<{ Variables: Variables }>) => {
-    return executeRequest(ctx, handler, null);
+): Handler<E, P> => {
+  return async (ctx: Context<E, P>) => {
+    return executeRequest(
+      ctx,
+      handler,
+      null,
+    );
   };
 };
 
@@ -102,6 +111,7 @@ export const createHandler = <
  * It attempts to parse the request body as JSON. If parsing fails, the body is set to null.
  *
  * @template TBody - The expected type of the JSON body.
+ * @template TResponse - The expected type of the response data.
  * @template TClaim - The type of the JWT claim (payload).
  * @template TQuery - The type of the query parameters.
  * @param {function(HandlerContext<TBody, TClaim, TQuery>): Promise<Response> | Response} handler - The function to handle the request.
@@ -109,21 +119,28 @@ export const createHandler = <
  */
 export const createJsonHandler = <
   TBody = unknown,
+  TResponse = unknown,
   TClaim = unknown,
   TQuery = Record<string, string | undefined>,
+  E extends Env = { Variables: Variables },
+  P extends string = string,
 >(
   handler: (
-    ctx: HandlerContext<TBody, TClaim, TQuery>,
+    ctx: HandlerContext<TBody, TResponse, TClaim, TQuery>,
   ) => Promise<Response> | Response,
-) => {
-  return async (ctx: Context<{ Variables: Variables }>) => {
+): Handler<E, P> => {
+  return async (ctx: Context<E, P>) => {
     let body = null as TBody;
     try {
       body = await ctx.req.json();
     } catch {
       body = null as TBody;
     }
-    return executeRequest(ctx, handler, body);
+    return executeRequest(
+      ctx,
+      handler,
+      body,
+    );
   };
 };
 
@@ -132,6 +149,7 @@ export const createJsonHandler = <
  * It attempts to parse the request body as form data. If parsing fails, the body is set to null.
  *
  * @template TBody - The expected type of the form body.
+ * @template TResponse - The expected type of the response data.
  * @template TClaim - The type of the JWT claim (payload).
  * @template TQuery - The type of the query parameters.
  * @param {function(HandlerContext<TBody, TClaim, TQuery>): Promise<Response> | Response} handler - The function to handle the request.
@@ -139,20 +157,27 @@ export const createJsonHandler = <
  */
 export const createFormHandler = <
   TBody = unknown,
+  TResponse = unknown,
   TClaim = unknown,
   TQuery = Record<string, string | undefined>,
+  E extends Env = { Variables: Variables },
+  P extends string = string,
 >(
   handler: (
-    ctx: HandlerContext<TBody, TClaim, TQuery>,
+    ctx: HandlerContext<TBody, TResponse, TClaim, TQuery>,
   ) => Promise<Response> | Response,
-) => {
-  return async (ctx: Context<{ Variables: Variables }>) => {
+): Handler<E, P> => {
+  return async (ctx: Context<E, P>) => {
     let body = null as TBody;
     try {
       body = (await ctx.req.parseBody()) as TBody;
     } catch {
       body = null as TBody;
     }
-    return executeRequest(ctx, handler, body);
+    return executeRequest(
+      ctx,
+      handler,
+      body,
+    );
   };
 };

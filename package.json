@@ -25,7 +25,9 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@hono/zod-openapi": "^1.2.0",
     "@hono/zod-validator": "^0.7.6",
+    "@scalar/hono-api-reference": "^0.9.35",
     "drizzle-orm": "^0.45.1",
     "hono": "^4.11.4",
     "zod": "^4.3.5"
