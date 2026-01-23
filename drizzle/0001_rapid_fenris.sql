@@ -1,0 +1,1 @@
+ALTER TABLE `chat_user` DROP COLUMN `user_id`;

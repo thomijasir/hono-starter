@@ -1,7 +1,7 @@
 import { eq, like } from "drizzle-orm";
 import type { CreateUserPayload } from "./model";
 import type { AppState } from "~/model";
-import { users } from "~/schemas/default";
+import { user } from "~/schemas/default";
 import type { UserModel } from "~/schemas/default";
 import { Err, Ok, Result } from "~/utils";
 import type { ResultType } from "~/utils";
@@ -19,7 +19,7 @@ export const findUserByEmail = async (
 ): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
   const userResult = await Result.async(
-    db.select().from(users).where(eq(users.email, email)),
+    db.select().from(user).where(eq(user.email, email)),
   );
   if (!userResult.ok) {
     return Err("database error");
@@ -41,7 +41,7 @@ export const findUserByEmail = async (
 export const findUserByID = async (state: AppState, id: number) => {
   const { db } = state;
   const userResult = await Result.async(
-    db.select().from(users).where(eq(users.id, id)),
+    db.select().from(user).where(eq(user.id, id)),
   );
   if (!userResult.ok) {
     return Err("database error");
@@ -65,8 +65,8 @@ export const findUserByName = async (state: AppState, name: string) => {
   const userResult = await Result.async(
     db
       .select()
-      .from(users)
-      .where(like(users.name, `%${name}%`)),
+      .from(user)
+      .where(like(user.name, `%${name}%`)),
   );
   if (!userResult.ok) {
     return Err("database error");
@@ -80,10 +80,12 @@ export const findUserByName = async (state: AppState, name: string) => {
 
 export const saveNewUser = async (
   state: AppState,
-  user: CreateUserPayload,
+  payload: CreateUserPayload,
 ): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
-  const result = await Result.async(db.insert(users).values(user).returning());
+  const result = await Result.async(
+    db.insert(user).values(payload).returning(),
+  );
   if (!result.ok) {
     return Err("failed insert user");
   }
@@ -105,7 +107,7 @@ export const saveUser = async (
     updatedAt: new Date().toISOString(),
   };
   const result = await Result.async(
-    db.update(users).set(changeSet).where(eq(users.id, id)).returning(),
+    db.update(user).set(changeSet).where(eq(user.id, id)).returning(),
   );
   if (!result.ok) {
     return Err("failed update user");
@@ -121,7 +123,7 @@ export const findAllUsers = async (
   state: AppState,
 ): Promise<ResultType<UserModel[], string>> => {
   const { db } = state;
-  const result = await Result.async(db.select().from(users));
+  const result = await Result.async(db.select().from(user));
   if (!result.ok) {
     return Err("database error");
   }

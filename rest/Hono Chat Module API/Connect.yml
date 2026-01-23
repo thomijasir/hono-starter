@@ -1,0 +1,27 @@
+info:
+  name: Connect
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{baseUrl}}/chat/connect"
+  body:
+    type: json
+    data: |-
+      {
+        "appId": "",
+        "userId": "",
+        "username": "",
+        "name": "Thomi Jasir",
+        "email": "thomijasir@gmail.com",
+        "deviceToken": "xx",
+        "deviceType": "ANDROID"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

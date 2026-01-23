@@ -1,11 +1,11 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { ApiResponse, PaginationMeta } from "~/model";
+import type { ApiResponse, ErrorApiResponse, PaginationMeta } from "~/model";
 
 /**
  * Standardized Success Response
  */
-export const httpResponse = <T>(
+export const httpResponse = <T,>(
   ctx: Context,
   data: T,
   message: string = "Success",
@@ -36,8 +36,8 @@ export const errorResponse = (
     {
       success: false,
       message,
-      data: errors,
-    } satisfies ApiResponse,
+      error: errors,
+    } satisfies ErrorApiResponse,
     status,
   );
 };

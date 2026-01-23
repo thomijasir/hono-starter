@@ -1,11 +1,51 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "452f39d1-8b6e-4ff0-a152-f9d857d917f1",
-  "prevId": "1a35a149-a122-4bbd-893d-693bf2b94cc8",
+  "id": "ef4e245d-6fdc-4021-a357-f08f5b0b6f75",
+  "prevId": "5cfe9e4d-c9b6-431e-8f71-ce8a25bddcd4",
   "tables": {
-    "calls": {
-      "name": "calls",
+    "app_client": {
+      "name": "app_client",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "call": {
+      "name": "call",
       "columns": {
         "id": {
           "name": "id",
@@ -53,10 +93,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "calls_conversation_id_conversations_id_fk": {
-          "name": "calls_conversation_id_conversations_id_fk",
-          "tableFrom": "calls",
-          "tableTo": "conversations",
+        "call_conversation_id_conversation_id_fk": {
+          "name": "call_conversation_id_conversation_id_fk",
+          "tableFrom": "call",
+          "tableTo": "conversation",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -66,10 +106,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "calls_caller_id_chat_users_id_fk": {
-          "name": "calls_caller_id_chat_users_id_fk",
-          "tableFrom": "calls",
-          "tableTo": "chat_users",
+        "call_caller_id_chat_user_id_fk": {
+          "name": "call_caller_id_chat_user_id_fk",
+          "tableFrom": "call",
+          "tableTo": "chat_user",
           "columnsFrom": [
             "caller_id"
           ],
@@ -84,8 +124,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "chat_users": {
-      "name": "chat_users",
+    "chat_user": {
+      "name": "chat_user",
       "columns": {
         "id": {
           "name": "id",
@@ -101,15 +141,22 @@
           "notNull": true,
           "autoincrement": false
         },
-        "user_id": {
-          "name": "user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "name": {
           "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "avatar": {
+          "name": "avatar",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -154,13 +201,27 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "chat_user_app_id_app_client_id_fk": {
+          "name": "chat_user_app_id_app_client_id_fk",
+          "tableFrom": "chat_user",
+          "tableTo": "app_client",
+          "columnsFrom": [
+            "app_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "conversations": {
-      "name": "conversations",
+    "conversation": {
+      "name": "conversation",
       "columns": {
         "id": {
           "name": "id",
@@ -216,10 +277,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "conversations_admin_id_chat_users_id_fk": {
-          "name": "conversations_admin_id_chat_users_id_fk",
-          "tableFrom": "conversations",
-          "tableTo": "chat_users",
+        "conversation_admin_id_chat_user_id_fk": {
+          "name": "conversation_admin_id_chat_user_id_fk",
+          "tableFrom": "conversation",
+          "tableTo": "chat_user",
           "columnsFrom": [
             "admin_id"
           ],
@@ -234,8 +295,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "messages": {
-      "name": "messages",
+    "message": {
+      "name": "message",
       "columns": {
         "id": {
           "name": "id",
@@ -290,10 +351,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "messages_conversation_id_conversations_id_fk": {
-          "name": "messages_conversation_id_conversations_id_fk",
-          "tableFrom": "messages",
-          "tableTo": "conversations",
+        "message_conversation_id_conversation_id_fk": {
+          "name": "message_conversation_id_conversation_id_fk",
+          "tableFrom": "message",
+          "tableTo": "conversation",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -303,10 +364,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "messages_sender_id_chat_users_id_fk": {
-          "name": "messages_sender_id_chat_users_id_fk",
-          "tableFrom": "messages",
-          "tableTo": "chat_users",
+        "message_sender_id_chat_user_id_fk": {
+          "name": "message_sender_id_chat_user_id_fk",
+          "tableFrom": "message",
+          "tableTo": "chat_user",
           "columnsFrom": [
             "sender_id"
           ],
@@ -321,8 +382,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "participants": {
-      "name": "participants",
+    "participant": {
+      "name": "participant",
       "columns": {
         "conversation_id": {
           "name": "conversation_id",
@@ -346,6 +407,13 @@
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
         },
+        "last_read_at": {
+          "name": "last_read_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "last_read_message_id": {
           "name": "last_read_message_id",
           "type": "text",
@@ -356,10 +424,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "participants_conversation_id_conversations_id_fk": {
-          "name": "participants_conversation_id_conversations_id_fk",
-          "tableFrom": "participants",
-          "tableTo": "conversations",
+        "participant_conversation_id_conversation_id_fk": {
+          "name": "participant_conversation_id_conversation_id_fk",
+          "tableFrom": "participant",
+          "tableTo": "conversation",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -369,10 +437,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "participants_user_id_chat_users_id_fk": {
-          "name": "participants_user_id_chat_users_id_fk",
-          "tableFrom": "participants",
-          "tableTo": "chat_users",
+        "participant_user_id_chat_user_id_fk": {
+          "name": "participant_user_id_chat_user_id_fk",
+          "tableFrom": "participant",
+          "tableTo": "chat_user",
           "columnsFrom": [
             "user_id"
           ],
@@ -387,8 +455,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "posts": {
-      "name": "posts",
+    "post": {
+      "name": "post",
       "columns": {
         "id": {
           "name": "id",
@@ -437,10 +505,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "posts_author_id_users_id_fk": {
-          "name": "posts_author_id_users_id_fk",
-          "tableFrom": "posts",
-          "tableTo": "users",
+        "post_author_id_user_id_fk": {
+          "name": "post_author_id_user_id_fk",
+          "tableFrom": "post",
+          "tableTo": "user",
           "columnsFrom": [
             "author_id"
           ],
@@ -455,8 +523,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "users": {
-      "name": "users",
+    "user": {
+      "name": "user",
       "columns": {
         "id": {
           "name": "id",
@@ -504,8 +572,8 @@
         }
       },
       "indexes": {
-        "users_email_unique": {
-          "name": "users_email_unique",
+        "user_email_unique": {
+          "name": "user_email_unique",
           "columns": [
             "email"
           ],
