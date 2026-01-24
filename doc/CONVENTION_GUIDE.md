@@ -54,14 +54,12 @@ We use specialized handler utilities to standardize request handling, enforce ty
 import { createHandler } from "~/utils";
 import * as service from "./service";
 
-export const getItems = createHandler(
-  async ({ query, httpResponse }) => {
-    // Access parsed query params
-    const page = Number(query.page) || 1;
-    const items = await service.fetchAll(page);
-    return httpResponse(items, "Items retrieved successfully");
-  },
-);
+export const getItems = createHandler(async ({ query, httpResponse }) => {
+  // Access parsed query params
+  const page = Number(query.page) || 1;
+  const items = await service.fetchAll(page);
+  return httpResponse(items, "Items retrieved successfully");
+});
 ```
 
 **POST Request (JSON Body)**
@@ -119,7 +117,7 @@ All API responses must follow a standardized JSON envelope.
 {
   "success": false,
   "message": "Resource not found",
-  "data": null, // Optional: validation errors details
+  "data": null // Optional: validation errors details
 }
 ```
 
@@ -149,20 +147,18 @@ For simple mock data that doesn't require logic, place files in `src/public`. Th
 
 Use the built-in logger middleware. For manual logging, prefer using `console.log` or `console.error` with descriptive tags, e.g., `[MyModule] Message...`.
 
-
-
 ## Detail Project Architecture & Naming Conventions
 
 This project follows a strict 4-layer architecture. To ensure code maintainability and easy debugging, we use a **"Verb Hierarchy"**. By looking at the function name, you should immediately know which layer of the application you are working in.
 
 ### The Core Concept: "The Verb Hierarchy"
 
-| Layer | Responsibility | Naming Convention | Primary Verbs |
-| --- | --- | --- | --- |
-| **Controller** | HTTP Handling | `[Verb][Entity]` or `[Verb]` | `get`, `create`, `update`, `delete`, `login` |
-| **Service** | Business Logic | `[Action][Entity]` | `register`, `process`, `verify`, `sign` |
-| **Repository** | Data Access | `[StorageOp][Entity][Criteria]` | `find...By...`, `save...`, `delete...` |
-| **Model** | Type Definitions | `[Noun]` | N/A |
+| Layer          | Responsibility   | Naming Convention               | Primary Verbs                                |
+| -------------- | ---------------- | ------------------------------- | -------------------------------------------- |
+| **Controller** | HTTP Handling    | `[Verb][Entity]` or `[Verb]`    | `get`, `create`, `update`, `delete`, `login` |
+| **Service**    | Business Logic   | `[Action][Entity]`              | `register`, `process`, `verify`, `sign`      |
+| **Repository** | Data Access      | `[StorageOp][Entity][Criteria]` | `find...By...`, `save...`, `delete...`       |
+| **Model**      | Type Definitions | `[Noun]`                        | N/A                                          |
 
 ---
 
@@ -171,23 +167,23 @@ This project follows a strict 4-layer architecture. To ensure code maintainabili
 **Role:** The Librarian.
 **Responsibility:** Dumb data access. No business logic allowed.
 
-* **Return Type:** Returns `Promise<ResultType<T>>` (using our Result utility).
-* **Convention:** Use **SQL/Storage verbs** + **Entity**.
-* **Rules:**
-* Never use "business" words like `register` or `process`.
-* Use `save` for both Insert and Update operations (or `saveNew...`, `save...`).
+- **Return Type:** Returns `Promise<ResultType<T>>` (using our Result utility).
+- **Convention:** Use **SQL/Storage verbs** + **Entity**.
+- **Rules:**
+- Never use "business" words like `register` or `process`.
+- Use `save` for both Insert and Update operations (or `saveNew...`, `save...`).
 
 **Examples:**
 
 ```typescript
 // ✅ Good
-findUserByEmail(state, email)
-saveNewPost(state, payload)
-deletePostById(state, id)
+findUserByEmail(state, email);
+saveNewPost(state, payload);
+deletePostById(state, id);
 
 // ❌ Bad
-createUser(user) // Implies logic
-checkIfUserExists(email) // Too verbose
+createUser(user); // Implies logic
+checkIfUserExists(email); // Too verbose
 ```
 
 ---
@@ -197,22 +193,22 @@ checkIfUserExists(email) // Too verbose
 **Role:** The Manager.
 **Responsibility:** Business logic, validation, error handling, and orchestrating repositories.
 
-* **Return Type:** Returns `ResultType<T>` or `Promise<ResultType<T>>`.
-* **Convention:** Use **Action/Business verbs**.
-* **Rules:**
-* This is the only layer that should import `Result.chain` or business validation logic.
-* Function names should describe the *intent* of the user.
+- **Return Type:** Returns `ResultType<T>` or `Promise<ResultType<T>>`.
+- **Convention:** Use **Action/Business verbs**.
+- **Rules:**
+- This is the only layer that should import `Result.chain` or business validation logic.
+- Function names should describe the _intent_ of the user.
 
 **Examples:**
 
 ```typescript
 // ✅ Good
-registerUser(params)
-signToken(user, secret)
-processOrder(orderId)
+registerUser(params);
+signToken(user, secret);
+processOrder(orderId);
 
 // ❌ Bad
-saveUser(params) // That is a repository name
+saveUser(params); // That is a repository name
 ```
 
 ---
@@ -222,22 +218,22 @@ saveUser(params) // That is a repository name
 **Role:** The Interface / Waiter.
 **Responsibility:** Parsing HTTP requests, reading headers, and sending JSON responses.
 
-* **Return Type:** `Promise<Response>` (via `httpResponse` or `errorResponse`).
-* **Convention:** Use **Handler verbs**.
-* **Rules:**
-* Controllers should be thin. They simply unwrap the `Result` from the Service or Repository.
-* Use `createHandler` or `createJsonHandler`.
+- **Return Type:** `Promise<Response>` (via `httpResponse` or `errorResponse`).
+- **Convention:** Use **Handler verbs**.
+- **Rules:**
+- Controllers should be thin. They simply unwrap the `Result` from the Service or Repository.
+- Use `createHandler` or `createJsonHandler`.
 
 **Examples:**
 
 ```typescript
 // ✅ Good
-register(ctx)
-getAllUsers(ctx)
-createPost(ctx)
+register(ctx);
+getAllUsers(ctx);
+createPost(ctx);
 
 // ❌ Bad
-saveUser(ctx) // Confusing with Repository
+saveUser(ctx); // Confusing with Repository
 ```
 
 ---
@@ -247,7 +243,7 @@ saveUser(ctx) // Confusing with Repository
 **Role:** The Blueprint.
 **Responsibility:** Defining the shape of data, DTOs (Data Transfer Objects), and Types.
 
-* **Convention:** Use **Nouns**.
+- **Convention:** Use **Nouns**.
 
 **Examples:**
 
@@ -268,27 +264,29 @@ Here is how a single feature ("User Registration") flows through the naming conv
 
 ```typescript
 import { createJsonHandler } from "~/utils";
-import * as Service from './service';
+import * as Service from "./service";
 
-export const register = createJsonHandler(async ({ body, state, httpResponse, errorResponse }) => {
-  // 1. Delegate to Service
-  const result = await Service.registerUser(state, body);
+export const register = createJsonHandler(
+  async ({ body, state, httpResponse, errorResponse }) => {
+    // 1. Delegate to Service
+    const result = await Service.registerUser(state, body);
 
-  // 2. Unwrap Result
-  if (result.ok) {
-    return httpResponse(result.val, "User registered", 201);
-  } else {
-    // Error handling logic
-    return errorResponse(result.err);
-  }
-});
+    // 2. Unwrap Result
+    if (result.ok) {
+      return httpResponse(result.val, "User registered", 201);
+    } else {
+      // Error handling logic
+      return errorResponse(result.err);
+    }
+  },
+);
 ```
 
 #### 2. Service (`service.ts`)
 
 ```typescript
-import * as UserRepo from './repository';
-import { Result, Ok, Err } from '~/utils';
+import * as UserRepo from "./repository";
+import { Result, Ok, Err } from "~/utils";
 
 export const registerUser = async (state: AppState, dto: CreateUserDTO) => {
   // 1. Validation (Business Logic)
@@ -306,23 +304,23 @@ export const registerUser = async (state: AppState, dto: CreateUserDTO) => {
 #### 3. Repository (`repository.ts`)
 
 ```typescript
-import { Result, Ok, Err } from '~/utils';
-import { users } from '~/schemas/default';
+import { Result, Ok, Err } from "~/utils";
+import { users } from "~/schemas/default";
 
 export const findUserByEmail = async (state: AppState, email: string) => {
   // Wraps DB call in Result safety
   const result = await Result.async(
-    state.db.select().from(users).where(eq(users.email, email))
+    state.db.select().from(users).where(eq(users.email, email)),
   );
   // ... check result.ok
   return Ok(result.val[0]);
 };
 
-export const saveNewUser = async (state: AppState, data: CreateUserPayload) => {
+export const saveNewUser = async (state: AppState, data: CreateUserType) => {
   const result = await Result.async(
-    state.db.insert(users).values(data).returning()
+    state.db.insert(users).values(data).returning(),
   );
-   // ... check result.ok
+  // ... check result.ok
   return Ok(result.val[0]);
 };
 ```

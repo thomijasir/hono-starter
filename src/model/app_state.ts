@@ -45,3 +45,7 @@ export interface Variables {
   /** The logger instance. */
   log: LogType;
 }
+
+export interface AppOpenApi {
+  Variables: Variables;
+}

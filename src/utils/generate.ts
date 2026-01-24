@@ -13,10 +13,6 @@ export const generateRandomString = (length: number) => {
   return randomString;
 };
 
-export const generateSnowflakeID = () => {
-  return "";
-};
-
 export const generateRandomNumber = () => {
   return Math.floor(Math.random() * 1000000);
 };

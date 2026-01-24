@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "lib": [
-      "ESNext"
-    ],
+    "lib": ["ESNext"],
     "target": "ESNext",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
@@ -20,9 +18,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "~/*": [
-        "src/*"
-      ]
+      "~/*": ["src/*"]
     },
     /* Linting */
     "strict": true,
@@ -36,9 +32,5 @@
     "forceConsistentCasingInFileNames": true,
     "noPropertyAccessFromIndexSignature": false
   },
-  "include": [
-    "src",
-    "scripts",
-    "drizzle.config.ts"
-  ]
+  "include": ["src", "scripts", "drizzle.config.ts"]
 }

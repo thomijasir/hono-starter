@@ -1,9 +1,9 @@
 import { eq, like } from "drizzle-orm";
-import type { CreateUserPayload } from "./model";
+import type { CreateUserType } from "./model";
 import type { AppState } from "~/model";
 import { user } from "~/schemas/default";
 import type { UserModel } from "~/schemas/default";
-import { Err, Ok, Result } from "~/utils";
+import { Err, generateUUID, Ok, Result } from "~/utils";
 import type { ResultType } from "~/utils";
 
 /**
@@ -11,18 +11,18 @@ import type { ResultType } from "~/utils";
  *
  * @param {AppState} state - The application state containing the database connection.
  * @param {string} email - The email address of the user to find.
- * @returns {Promise<Result<User, string>>} A Result containing the user if found, or an error message.
+ * @returns {Promise<Result<User, Error | string>>} A Result containing the user if found, or an error message.
  */
 export const findUserByEmail = async (
   state: AppState,
   email: string,
-): Promise<ResultType<UserModel, string>> => {
+): Promise<ResultType<UserModel, Error | string>> => {
   const { db } = state;
   const userResult = await Result.async(
     db.select().from(user).where(eq(user.email, email)),
   );
   if (!userResult.ok) {
-    return Err("database error");
+    return userResult;
   }
   const foundUser = userResult.val[0];
   if (!foundUser) {
@@ -36,15 +36,15 @@ export const findUserByEmail = async (
  *
  * @param {AppState} state - The application state containing the database connection.
  * @param {number} id - The ID of the user to find.
- * @returns {Promise<Result<User, string>>} A Result containing the user if found, or an error message.
+ * @returns {Promise<Result<User, Error>>} A Result containing the user if found, or an error message.
  */
-export const findUserByID = async (state: AppState, id: number) => {
+export const findUserByID = async (state: AppState, id: string) => {
   const { db } = state;
   const userResult = await Result.async(
     db.select().from(user).where(eq(user.id, id)),
   );
   if (!userResult.ok) {
-    return Err("database error");
+    return userResult;
   }
   const foundUser = userResult.val[0];
   if (!foundUser) {
@@ -54,11 +54,11 @@ export const findUserByID = async (state: AppState, id: number) => {
 };
 
 /**
- * Finds users by their name (partial match).
+ * Finds user by their name (partial match).
  *
  * @param {AppState} state - The application state containing the database connection.
  * @param {string} name - The name (or partial name) to search for.
- * @returns {Promise<Result<User[], string>>} A Result containing an array of matching users if found, or an error message.
+ * @returns {Promise<Result<User[], string>>} A Result containing an array of matching user if found, or an error message.
  */
 export const findUserByName = async (state: AppState, name: string) => {
   const { db } = state;
@@ -80,11 +80,14 @@ export const findUserByName = async (state: AppState, name: string) => {
 
 export const saveNewUser = async (
   state: AppState,
-  payload: CreateUserPayload,
+  payload: CreateUserType,
 ): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.insert(user).values(payload).returning(),
+    db
+      .insert(user)
+      .values({ ...payload, id: generateUUID() })
+      .returning(),
   );
   if (!result.ok) {
     return Err("failed insert user");
@@ -98,8 +101,8 @@ export const saveNewUser = async (
 
 export const saveUser = async (
   state: AppState,
-  id: number,
-  payload: CreateUserPayload,
+  id: string,
+  payload: CreateUserType,
 ): Promise<ResultType<UserModel, string>> => {
   const { db } = state;
   const changeSet = {

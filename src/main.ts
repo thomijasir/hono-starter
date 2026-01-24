@@ -17,7 +17,7 @@ const startServer = async () => {
       // HTTPS Server
       server = Bun.serve({
         fetch: app.fetch,
-        port: port, // e.g., 3001
+        port, // e.g., 3001
         tls: {
           key: Bun.file("certs/key.pem"),
           cert: Bun.file("certs/cert.pem"),
@@ -28,7 +28,7 @@ const startServer = async () => {
       // HTTP Server
       server = Bun.serve({
         fetch: app.fetch,
-        port: port, // e.g., 3000
+        port, // e.g., 3000
       });
       log.info(`HTTP Server is running on http://localhost:${port}`);
     }

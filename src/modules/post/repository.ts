@@ -1,5 +1,5 @@
 import { eq, sql } from "drizzle-orm";
-import type { CreatePostPayload, UpdatePostPayload } from "./model";
+import type { CreatePostType, UpdatePostType } from "./model";
 import type { AppState } from "~/model";
 import type { PostModel } from "~/schemas/default";
 import { post } from "~/schemas/default";
@@ -10,7 +10,7 @@ export const findAllPosts = async (
   state: AppState,
   page: number = 1,
   limit: number = 10,
-): Promise<ResultType<{ posts: PostModel[]; total: number }, string>> => {
+) => {
   const { db } = state;
 
   const datasetResult = await Result.async(
@@ -22,7 +22,7 @@ export const findAllPosts = async (
   );
 
   if (!datasetResult.ok) {
-    return Err("database error");
+    return datasetResult;
   }
 
   const countResult = await Result.async(
@@ -30,7 +30,7 @@ export const findAllPosts = async (
   );
 
   if (!countResult.ok) {
-    return Err("database error");
+    return countResult;
   }
 
   return Ok({
@@ -52,18 +52,18 @@ export const findPostById = async (
     return Err("database error");
   }
 
-  const resultPost = result.val[0];
-  if (!resultPost) {
+  const data = result.val[0];
+  if (!data) {
     return Err("Post not found");
   }
 
-  return Ok(resultPost);
+  return Ok(data);
 };
 
 export const saveNewPost = async (
   state: AppState,
-  authorId: number,
-  payload: CreatePostPayload,
+  authorId: string,
+  payload: CreatePostType,
 ): Promise<ResultType<PostModel, string>> => {
   const { db } = state;
   const result = await Result.async(
@@ -91,7 +91,7 @@ export const saveNewPost = async (
 export const savePost = async (
   state: AppState,
   id: number,
-  payload: UpdatePostPayload,
+  payload: UpdatePostType,
 ): Promise<ResultType<PostModel, string>> => {
   const { db } = state;
   const changeSet = {
