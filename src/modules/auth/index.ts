@@ -1,16 +1,54 @@
-import { Hono } from "hono";
-import type { Variables } from "hono/types";
 import * as controller from "./controller";
-import { LoginSchema, RegisterSchema } from "./model";
+import { AuthResponseSchema, LoginSchema, RegisterSchema } from "./model";
 import { validator } from "~/middlewares";
+import {
+  jsonResponseSchema,
+  jsonRequest,
+  createResponses,
+  createRouter,
+  createRoute,
+} from "~/utils";
 
 export const authRoutes = () => {
-  const routes = new Hono<{ Variables: Variables }>();
-  routes.post("/login", validator("json", LoginSchema), controller.login);
-  routes.post(
-    "/register",
-    validator("json", RegisterSchema),
-    controller.register,
-  );
-  return routes;
+  const successResponseSchema = jsonResponseSchema(AuthResponseSchema);
+  return createRouter()
+    .openapi(
+      createRoute({
+        method: "post",
+        path: "/login",
+        middleware: [validator("json", LoginSchema)],
+        request: jsonRequest(LoginSchema),
+        responses: createResponses(
+          successResponseSchema,
+          "Login successful",
+          200,
+          {
+            401: {
+              description: "Invalid credentials",
+            },
+          },
+        ),
+        tags: ["Auth"],
+      }),
+      controller.login,
+    )
+    .openapi(
+      createRoute({
+        method: "post",
+        path: "/register",
+        request: jsonRequest(RegisterSchema),
+        responses: createResponses(
+          successResponseSchema,
+          "Registration successful",
+          201,
+          {
+            400: {
+              description: "Validation error or User already exists",
+            },
+          },
+        ),
+        tags: ["Auth"],
+      }),
+      controller.register,
+    );
 };

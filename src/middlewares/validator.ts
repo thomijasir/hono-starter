@@ -1,6 +1,6 @@
 import { zValidator as baseValidator } from "@hono/zod-validator";
 import type { ValidationTargets } from "hono";
-import type { z } from "zod";
+import z from "zod";
 import { errorResponse } from "~/utils";
 
 export const validator = <T extends z.ZodType>(
@@ -9,7 +9,12 @@ export const validator = <T extends z.ZodType>(
 ) =>
   baseValidator(target, schema, (result, c) => {
     if (!result.success) {
-      return errorResponse(c, "Validation Error", 400, result.error.issues);
+      return errorResponse(
+        c,
+        "Validation Error",
+        400,
+        z.treeifyError(result.error),
+      );
     }
     return;
   });
