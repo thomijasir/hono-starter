@@ -11,6 +11,18 @@ export const jsonResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
     success: z.boolean().openapi({ example: true }),
     message: z.string().openapi({ example: "Success" }),
     data: dataSchema,
+  });
+
+/**
+ * Standardized Success Response Schema With Pagination Factory
+ */
+export const jsonResponsePaginationSchema = <T extends z.ZodType>(
+  dataSchema: T,
+) =>
+  z.object({
+    success: z.boolean().openapi({ example: true }),
+    message: z.string().openapi({ example: "Success" }),
+    data: dataSchema,
     meta: z
       .object({
         page: z.number().openapi({ example: 1 }),
@@ -34,7 +46,7 @@ export const jsonErrorResponseSchema = () =>
 /**
  * Standardized Success Response
  */
-export const httpResponse = <T>(
+export const httpResponse = <T,>(
   ctx: Context,
   data: T,
   message: string = "Success",

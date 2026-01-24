@@ -68,6 +68,9 @@ export const Ok = <T>(value: T): ResultType<T, never> => {
  * Helper to create a Failure Result
  */
 export const Err = <E>(error: E): ResultType<never, E> => {
+  if (typeof error === "string") {
+    return { ok: false, err: new Error(error) as unknown as E };
+  }
   return { ok: false, err: error };
 };
 

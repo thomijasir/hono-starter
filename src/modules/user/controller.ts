@@ -1,3 +1,4 @@
+import type { JWTAuthDataType } from "../auth/model";
 import { findAllUsers, findUserByID } from "./repository";
 import { createHandler } from "~/utils";
 
@@ -14,8 +15,7 @@ export const getAllUsers = createHandler(
 
 export const getUser = createHandler(
   async ({ state, params, httpResponse, errorResponse }) => {
-    const id = Number(params.id);
-    const user = await findUserByID(state, id);
+    const user = await findUserByID(state, params.id ?? "");
 
     if (!user.ok) {
       return errorResponse(user.err, 404);
@@ -26,7 +26,7 @@ export const getUser = createHandler(
   },
 );
 
-export const getMyProfile = createHandler<object, { id: number }>(
+export const getMyProfile = createHandler<object, JWTAuthDataType>(
   ({ httpResponse, claim }) => {
     return httpResponse(claim as object);
   },

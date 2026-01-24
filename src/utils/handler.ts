@@ -21,7 +21,7 @@ interface HandlerContext<
   params: Record<string, string>;
   query: TQuery;
   body: TBody;
-  claim: TClaim | null;
+  claim: TClaim;
   header: Record<string, string>;
   httpResponse: (
     data: TResponse,
@@ -30,7 +30,7 @@ interface HandlerContext<
     meta?: PaginationMeta,
   ) => Response;
   errorResponse: (
-    message?: string,
+    message?: string | Error,
     status?: ContentfulStatusCode,
     errors?: unknown,
   ) => Response;
@@ -58,12 +58,15 @@ const executeRequest = async <
   ) => httpResponse(ctx, data, message, status, meta);
 
   const wrappedErrorResponse = (
-    message: string = "failed",
+    message: string | Error = "failed",
     status: ContentfulStatusCode = 500,
     errors?: unknown,
-  ) => errorResponse(ctx, message, status, errors);
+  ) => {
+    const msg = message instanceof Error ? message.message : message;
+    return errorResponse(ctx, msg, status, errors);
+  };
 
-  const vars = ctx.var as unknown as Variables & { jwtPayload?: TClaim };
+  const vars = ctx.var as unknown as Variables & { jwtPayload: TClaim };
 
   return handler({
     state: vars.state,
@@ -71,7 +74,7 @@ const executeRequest = async <
     params: ctx.req.param() as Record<string, string>,
     query: ctx.req.query() as TQuery,
     body,
-    claim: vars.jwtPayload ?? null,
+    claim: vars.jwtPayload,
     header: ctx.req.header(),
     httpResponse: wrappedHttpResponse,
     errorResponse: wrappedErrorResponse,

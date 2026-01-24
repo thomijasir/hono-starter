@@ -7,3 +7,4 @@ export * from "./result";
 export * from "./log";
 export * from "./hash";
 export * from "./route";
+export * from "./generate";

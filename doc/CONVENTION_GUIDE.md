@@ -316,7 +316,7 @@ export const findUserByEmail = async (state: AppState, email: string) => {
   return Ok(result.val[0]);
 };
 
-export const saveNewUser = async (state: AppState, data: CreateUserPayload) => {
+export const saveNewUser = async (state: AppState, data: CreateUserType) => {
   const result = await Result.async(
     state.db.insert(users).values(data).returning(),
   );

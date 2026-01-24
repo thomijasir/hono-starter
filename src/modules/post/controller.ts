@@ -1,4 +1,5 @@
-import type { CreatePostPayload, UpdatePostPayload } from "./model";
+import type { JWTAuthDataType } from "../auth/model";
+import type { CreatePostType, UpdatePostType } from "./model";
 import {
   saveNewPost,
   deletePostById,
@@ -42,14 +43,10 @@ export const getPost = createHandler(
 );
 
 export const createPost = createJsonHandler<
-  CreatePostPayload,
-  { id: number },
-  { id: number }
+  CreatePostType,
+  PostModel,
+  JWTAuthDataType
 >(async ({ state, body, claim, httpResponse, errorResponse }) => {
-  if (!claim) {
-    return errorResponse("Unauthorized", 401);
-  }
-
   const postResult = await saveNewPost(state, claim.id, body);
 
   if (!postResult.ok) {
@@ -60,19 +57,17 @@ export const createPost = createJsonHandler<
 });
 
 export const updatePost = createJsonHandler<
-  UpdatePostPayload,
-  { id: number },
-  { id: number }
+  UpdatePostType,
+  PostModel,
+  JWTAuthDataType
 >(async ({ state, params, body, claim, httpResponse, errorResponse }) => {
+  if (!params.id) {
+    return errorResponse("params is required");
+  }
   const id = Number(params.id);
-
   const chainResult = await Result.chain(
     findPostById(state, id),
     (existingPost: PostModel) => {
-      if (!claim) {
-        // This should ideally be caught by middleware, but for safety in logic flow
-        return { ok: false, err: "Unauthorized" };
-      }
       if (existingPost.authorId !== claim.id) {
         return { ok: false, err: "Forbidden" };
       }
@@ -88,28 +83,27 @@ export const updatePost = createJsonHandler<
   return httpResponse(chainResult.val, "Post updated successfully");
 });
 
-export const deletePost = createHandler<null, { id: number }>(
-  async ({ state, params, claim, httpResponse, errorResponse }) => {
-    const id = Number(params.id);
+export const deletePost = createHandler<
+  unknown,
+  JWTAuthDataType,
+  { id: string }
+>(async ({ state, params, claim, httpResponse, errorResponse }) => {
+  const id = Number(params.id);
 
-    const chainResult = await Result.chain(
-      findPostById(state, id),
-      (existingPost: PostModel) => {
-        if (!claim) {
-          return { ok: false, err: "Unauthorized" };
-        }
-        if (existingPost.authorId !== claim.id) {
-          return { ok: false, err: "Forbidden" };
-        }
-        return Ok(existingPost);
-      },
-      () => deletePostById(state, id),
-    );
+  const chainResult = await Result.chain(
+    findPostById(state, id),
+    (existingPost: PostModel) => {
+      if (existingPost.authorId !== claim.id) {
+        return { ok: false, err: "Forbidden" };
+      }
+      return Ok(existingPost);
+    },
+    () => deletePostById(state, id),
+  );
 
-    if (!chainResult.ok) {
-      return errorResponse(chainResult.err);
-    }
+  if (!chainResult.ok) {
+    return errorResponse(chainResult.err);
+  }
 
-    return httpResponse(null, "Post deleted successfully");
-  },
-);
+  return httpResponse(null, "post deleted successfully");
+});

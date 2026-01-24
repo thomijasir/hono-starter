@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { JWTAuthDataSchema } from "../auth/model";
 import * as controller from "./controller";
 import { GetUserParamSchema, UserSchema } from "./model";
 import { auth } from "~/middlewares";
@@ -7,11 +8,14 @@ import {
   createRouter,
   createRoute,
   jsonResponseSchema,
+  jsonResponsePaginationSchema,
 } from "~/utils";
 
 export const userRoutes = () => {
   const userResponseSchema = jsonResponseSchema(UserSchema);
-  const userListResponseSchema = jsonResponseSchema(z.array(UserSchema));
+  const userListResponseSchema = jsonResponsePaginationSchema(
+    z.array(UserSchema),
+  );
 
   return createRouter()
     .openapi(
@@ -33,13 +37,7 @@ export const userRoutes = () => {
         path: "/myinfo",
         middleware: [auth] as const,
         responses: createResponses(
-          jsonResponseSchema(
-            z.object({
-              id: z.number().openapi({ example: 1 }),
-              name: z.string().openapi({ example: "John Doe" }),
-              email: z.email().openapi({ example: "john@example.com" }),
-            }),
-          ),
+          jsonResponseSchema(JWTAuthDataSchema),
           "Get my profile",
           200,
           {

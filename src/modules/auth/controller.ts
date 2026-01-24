@@ -1,5 +1,5 @@
 import { findUserByEmail, saveNewUser } from "../user/repository";
-import type { LoginPayload, RegisterPayload, AuthResponse } from "./model";
+import type { LoginType, RegisterType, AuthResponseType } from "./model";
 import { signToken } from "./service";
 import type { UserModel } from "~/schemas/default";
 import {
@@ -13,7 +13,7 @@ import {
 } from "~/utils";
 
 // Pipe handle method (recommend for simple operation and most cases)
-export const login = createJsonHandler<LoginPayload, AuthResponse>(
+export const login = createJsonHandler<LoginType, AuthResponseType>(
   async (props) => {
     const { body, state, httpResponse, errorResponse } = props;
     const chainResult = await Result.chain(
@@ -37,7 +37,7 @@ export const login = createJsonHandler<LoginPayload, AuthResponse>(
 );
 
 // Standard handle (recommend for complex operation)
-export const register = createJsonHandler<RegisterPayload, AuthResponse>(
+export const register = createJsonHandler<RegisterType, AuthResponseType>(
   async ({ body, state, httpResponse, errorResponse }) => {
     const userResult = await findUserByEmail(state, body.email);
     if (userResult.ok) {
