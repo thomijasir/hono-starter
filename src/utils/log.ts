@@ -25,7 +25,12 @@ class Logger {
     return new Date().toISOString();
   }
 
-  private serialize(level: LogLevel, msg: string, obj?: object, ...args: unknown[]) {
+  private serialize(
+    level: LogLevel,
+    msg: string,
+    obj?: object,
+    ...args: unknown[]
+  ) {
     if (this.isProduction) {
       const logData = {
         level,
@@ -67,7 +72,12 @@ class Logger {
     return output;
   }
 
-  private dispatch(level: LogLevel, arg1: string | object, arg2?: unknown, ...moreArgs: unknown[]) {
+  private dispatch(
+    level: LogLevel,
+    arg1: string | object,
+    arg2?: unknown,
+    ...moreArgs: unknown[]
+  ) {
     let msg = "";
     let obj = {};
     const args: unknown[] = [];

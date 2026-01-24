@@ -12,11 +12,12 @@ const startServer = async () => {
 
     const { port, useHttps } = state.config;
 
+    let server;
     if (useHttps) {
       // HTTPS Server
-      Bun.serve({
+      server = Bun.serve({
         fetch: app.fetch,
-        port: port, // e.g., 3001
+        port, // e.g., 3001
         tls: {
           key: Bun.file("certs/key.pem"),
           cert: Bun.file("certs/cert.pem"),
@@ -25,13 +26,33 @@ const startServer = async () => {
       log.info(`HTTPS Server is running on https://localhost:${port}`);
     } else {
       // HTTP Server
-      Bun.serve({
+      server = Bun.serve({
         fetch: app.fetch,
-        port: port, // e.g., 3000
+        port, // e.g., 3000
       });
       log.info(`HTTP Server is running on http://localhost:${port}`);
     }
     log.info(`Environment: ${state.config.environment}`);
+
+    let isShuttingDown = false;
+
+    const shutdown = async () => {
+      if (isShuttingDown) return;
+      isShuttingDown = true;
+      log.info("Gracefully shutting down...");
+      await server.stop();
+      state.dbClient.close();
+      log.info("Server and Database closed. Exiting process.");
+      // eslint-disable-next-line n/no-process-exit
+      process.exit(0);
+    };
+
+    process.on("SIGINT", () => {
+      void shutdown();
+    });
+    process.on("SIGTERM", () => {
+      void shutdown();
+    });
   } catch (err) {
     log.error("FAILED_TO_START_SERVER", err);
     // eslint-disable-next-line n/no-process-exit

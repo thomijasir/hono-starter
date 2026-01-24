@@ -1,30 +1,33 @@
-import type { Context } from "hono";
-import * as userService from "./service";
-import type { Variables } from "~/model";
-import { httpResponse, errorResponse } from "~/utils";
+import type { JWTAuthDataType } from "../auth/model";
+import { findAllUsers, findUserByID } from "./repository";
+import { createHandler } from "~/utils";
 
-export const getAllUsers = async (c: Context<{ Variables: Variables }>) => {
-  const state = c.get("state");
-  
-  // Simulate a DB query
-  await state.db.query("SELECT * FROM users");
+export const getAllUsers = createHandler(
+  async ({ state, httpResponse, errorResponse }) => {
+    const users = await findAllUsers(state);
+    if (!users.ok) {
+      return errorResponse(users.err);
+    }
+    const safeUsers = users.val.map(({ password: _password, ...user }) => user);
+    return httpResponse(safeUsers);
+  },
+);
 
-  const users = userService.getUsers();
-  return httpResponse(c, users);
-};
+export const getUser = createHandler(
+  async ({ state, params, httpResponse, errorResponse }) => {
+    const user = await findUserByID(state, params.id ?? "");
 
-export const getUser = (c: Context) => {
-  const id = Number(c.req.param("id"));
-  const user = userService.getUserById(id);
+    if (!user.ok) {
+      return errorResponse(user.err, 404);
+    }
 
-  if (!user) {
-    return errorResponse(c, "User not found", 404);
-  }
+    const { password: _password, ...safeUser } = user.val;
+    return httpResponse(safeUser);
+  },
+);
 
-  return httpResponse(c, user);
-};
-
-export const getMyProfile = (c: Context<{ Variables: Variables }>) => {
-  const payload = c.get("jwtPayload") as { sub: string };
-  return httpResponse(c, payload);
-};
+export const getMyProfile = createHandler<object, JWTAuthDataType>(
+  ({ httpResponse, claim }) => {
+    return httpResponse(claim as object);
+  },
+);
