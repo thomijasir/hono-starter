@@ -29,6 +29,18 @@ src/
 
 - **Files**: Use `snake_case` for variables and function names. Use `PascalCase` for classes and types. File names should generally be `snake_case` (e.g., `user_controller.ts`) or descriptive standard names like `controller.ts` within a module.
 - **Directories**: Use `snake_case` for directory names (e.g., `user_content`).
+
+### Plural vs Singular
+
+We strictly distinguish between "Collections" (External) and "Entities" (Internal).
+
+- **Database Tables**: MUST be **Plural** (e.g., `users`, `posts`, `chat_participants`).
+  - _Reason_: in the database like postgresql, mysql, etc, keywords such as `user` is reserved. we need distinguishing between collection and entity. so we will have clear seperation if we use plural for collection and singular for entity.
+- **REST API Resources**: MUST be **Plural** (e.g., `/users`, `/posts`).
+  - _Reason_: Conforms to standard REST practices representing a collection of resources.
+- **Modules & Code Implementation**: MUST be **Singular** (e.g., `src/modules/user`, `const user = ...`).
+  - _Reason_: Represents the domain concept or a single instance of that entity during processing.
+
 - **Module Files**:
   - `controller.ts`: Contains the HTTP request handlers.
   - `service.ts`: Contains the business logic and orchestration.

@@ -1,6 +1,6 @@
 import { Database } from "bun:sqlite";
 import { drizzle } from "drizzle-orm/bun-sqlite";
-import { user } from "../src/schemas/default";
+import { users } from "../src/schemas/default";
 
 const runSeed = async () => {
   console.log("🌱 Seeding database...");
@@ -14,7 +14,7 @@ const runSeed = async () => {
       cost: 4,
     });
     // Insert sample user
-    db.insert(user)
+    db.insert(users)
       .values({
         id: Bun.randomUUIDv7(),
         name: "Test User",

@@ -1,8 +1,8 @@
 import { eq, sql } from "drizzle-orm";
 import type { CreatePostType, UpdatePostType } from "./model";
 import type { AppState } from "~/model";
-import type { PostModel } from "~/schemas/default";
-import { post } from "~/schemas/default";
+import type { PostsModel } from "~/schemas/default";
+import { posts } from "~/schemas/default";
 import type { ResultType } from "~/utils";
 import { Err, Ok, Result } from "~/utils";
 
@@ -16,7 +16,7 @@ export const findAllPosts = async (
   const datasetResult = await Result.async(
     db
       .select()
-      .from(post)
+      .from(posts)
       .limit(limit)
       .offset((page - 1) * limit),
   );
@@ -26,7 +26,7 @@ export const findAllPosts = async (
   }
 
   const countResult = await Result.async(
-    db.select({ count: sql<number>`count(*)` }).from(post),
+    db.select({ count: sql<number>`count(*)` }).from(posts),
   );
 
   if (!countResult.ok) {
@@ -42,10 +42,10 @@ export const findAllPosts = async (
 export const findPostById = async (
   state: AppState,
   id: number,
-): Promise<ResultType<PostModel, string>> => {
+): Promise<ResultType<PostsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(post).where(eq(post.id, id)),
+    db.select().from(posts).where(eq(posts.id, id)),
   );
 
   if (!result.ok) {
@@ -54,7 +54,7 @@ export const findPostById = async (
 
   const data = result.val[0];
   if (!data) {
-    return Err("Post not found");
+    return Err("posts not found");
   }
 
   return Ok(data);
@@ -64,11 +64,11 @@ export const saveNewPost = async (
   state: AppState,
   authorId: string,
   payload: CreatePostType,
-): Promise<ResultType<PostModel, string>> => {
+): Promise<ResultType<PostsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .insert(post)
+      .insert(posts)
       .values({
         ...payload,
         authorId,
@@ -77,12 +77,12 @@ export const saveNewPost = async (
   );
 
   if (!result.ok) {
-    return Err("failed insert post");
+    return Err("failed insert posts");
   }
 
   const newPost = result.val[0];
   if (!newPost) {
-    return Err("failed insert post");
+    return Err("failed insert posts");
   }
 
   return Ok(newPost);
@@ -92,23 +92,23 @@ export const savePost = async (
   state: AppState,
   id: number,
   payload: UpdatePostType,
-): Promise<ResultType<PostModel, string>> => {
+): Promise<ResultType<PostsModel, string>> => {
   const { db } = state;
   const changeSet = {
     ...payload,
     updatedAt: new Date().toISOString(),
   };
   const result = await Result.async(
-    db.update(post).set(changeSet).where(eq(post.id, id)).returning(),
+    db.update(posts).set(changeSet).where(eq(posts.id, id)).returning(),
   );
 
   if (!result.ok) {
-    return Err("failed update post");
+    return Err("failed update posts");
   }
 
   const updatedPost = result.val[0];
   if (!updatedPost) {
-    return Err("failed update post");
+    return Err("failed update posts");
   }
 
   return Ok(updatedPost);
@@ -119,10 +119,10 @@ export const deletePostById = async (
   id: number,
 ): Promise<ResultType<void, string>> => {
   const { db } = state;
-  const result = await Result.async(db.delete(post).where(eq(post.id, id)));
+  const result = await Result.async(db.delete(posts).where(eq(posts.id, id)));
 
   if (!result.ok) {
-    return Err("failed delete post");
+    return Err("failed delete posts");
   }
 
   return Ok(undefined);
