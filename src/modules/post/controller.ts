@@ -7,7 +7,7 @@ import {
   savePost,
   findAllPosts,
 } from "./repository";
-import type { PostModel } from "~/schemas/default";
+import type { PostsModel } from "~/schemas/default";
 import { createHandler, createJsonHandler, Ok, Result } from "~/utils";
 
 export const getAllPosts = createHandler(
@@ -44,7 +44,7 @@ export const getPost = createHandler(
 
 export const createPost = createJsonHandler<
   CreatePostType,
-  PostModel,
+  PostsModel,
   JWTAuthDataType
 >(async ({ state, body, claim, httpResponse, errorResponse }) => {
   const postResult = await saveNewPost(state, claim.id, body);
@@ -58,7 +58,7 @@ export const createPost = createJsonHandler<
 
 export const updatePost = createJsonHandler<
   UpdatePostType,
-  PostModel,
+  PostsModel,
   JWTAuthDataType
 >(async ({ state, params, body, claim, httpResponse, errorResponse }) => {
   if (!params.id) {
@@ -67,7 +67,7 @@ export const updatePost = createJsonHandler<
   const id = Number(params.id);
   const chainResult = await Result.chain(
     findPostById(state, id),
-    (existingPost: PostModel) => {
+    (existingPost: PostsModel) => {
       if (existingPost.authorId !== claim.id) {
         return { ok: false, err: "Forbidden" };
       }
@@ -92,7 +92,7 @@ export const deletePost = createHandler<
 
   const chainResult = await Result.chain(
     findPostById(state, id),
-    (existingPost: PostModel) => {
+    (existingPost: PostsModel) => {
       if (existingPost.authorId !== claim.id) {
         return { ok: false, err: "Forbidden" };
       }

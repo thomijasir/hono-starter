@@ -1,7 +1,7 @@
 import { findUserByEmail, saveNewUser } from "../user/repository";
 import type { LoginType, RegisterType, AuthResponseType } from "./model";
 import { signToken } from "./service";
-import type { UserModel } from "~/schemas/default";
+import type { UsersModel } from "~/schemas/default";
 import {
   createJsonHandler,
   createHandler,
@@ -18,14 +18,14 @@ export const login = createJsonHandler<LoginType, AuthResponseType>(
     const { body, state, httpResponse, errorResponse } = props;
     const chainResult = await Result.chain(
       findUserByEmail(state, body.email),
-      async (user: UserModel) => {
+      async (user: UsersModel) => {
         const matchResult = await verifyPassword(body.password, user.password);
         if (!matchResult.ok || !matchResult.val) {
           return Err("invalid email or password");
         }
         return Ok(user);
       },
-      (user: UserModel) => signToken(user, state.config.jwtSecret),
+      (user: UsersModel) => signToken(user, state.config.jwtSecret),
     );
 
     if (!chainResult.ok) {

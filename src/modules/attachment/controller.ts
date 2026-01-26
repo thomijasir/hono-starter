@@ -6,12 +6,12 @@ import {
   findAllAttachments,
 } from "./repository";
 import { fileService } from "./service";
-import type { AttachmentModel } from "~/schemas/default";
+import type { AttachmentsModel } from "~/schemas/default";
 import { createFormHandler, createHandler } from "~/utils";
 
 export const uploadAttachment = createFormHandler<
   { file: File },
-  AttachmentModel,
+  AttachmentsModel,
   JWTAuthDataType
 >(async ({ state, body, claim, httpResponse, errorResponse }) => {
   const file = body.file;

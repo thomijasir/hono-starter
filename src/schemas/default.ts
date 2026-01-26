@@ -2,7 +2,7 @@ import { sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const user = sqliteTable("user", {
+export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
@@ -15,16 +15,16 @@ export const user = sqliteTable("user", {
     .notNull(),
 });
 
-export type UserModel = InferSelectModel<typeof user>;
+export type UsersModel = InferSelectModel<typeof users>;
 
-export const post = sqliteTable("post", {
+export const posts = sqliteTable("posts", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   tags: text("tags"),
   content: text("content", { mode: "text" }).notNull(),
   metadata: text("metadata", { mode: "json" }),
   authorId: text("author_id")
-    .references(() => user.id)
+    .references(() => users.id)
     .notNull(),
   createdAt: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -34,9 +34,9 @@ export const post = sqliteTable("post", {
     .notNull(),
 });
 
-export type PostModel = InferSelectModel<typeof post>;
+export type PostsModel = InferSelectModel<typeof posts>;
 
-export const attachment = sqliteTable("attachment", {
+export const attachments = sqliteTable("attachments", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userId: text("user_id").notNull(),
   filename: text("filename").notNull(),
