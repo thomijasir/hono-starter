@@ -1,18 +1,18 @@
 import { eq } from "drizzle-orm";
-import type { CreateAppClientPayload, UpdateAppClientPayload } from "./model";
+import type { CreateAppClientType, UpdateAppClientType } from "./model";
 import type { AppState } from "~/model";
-import type { AppClientModel } from "~/schemas/default";
-import { appClient } from "~/schemas/default";
+import type { AppClientsModel } from "~/schemas/default";
+import { appClients } from "~/schemas/default";
 import type { ResultType } from "~/utils";
 import { Err, Ok, Result, generateUUID } from "~/utils";
 
 export const findAppClientById = async (
   state: AppState,
   id: string,
-): Promise<ResultType<AppClientModel, string>> => {
+): Promise<ResultType<AppClientsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(appClient).where(eq(appClient.id, id)),
+    db.select().from(appClients).where(eq(appClients.id, id)),
   );
 
   if (!result.ok) {
@@ -29,9 +29,9 @@ export const findAppClientById = async (
 
 export const findAllAppClients = async (
   state: AppState,
-): Promise<ResultType<AppClientModel[], string>> => {
+): Promise<ResultType<AppClientsModel[], string>> => {
   const { db } = state;
-  const result = await Result.async(db.select().from(appClient));
+  const result = await Result.async(db.select().from(appClients));
 
   if (!result.ok) {
     return Err("database error");
@@ -42,15 +42,15 @@ export const findAllAppClients = async (
 
 export const saveNewAppClient = async (
   state: AppState,
-  payload: CreateAppClientPayload,
-): Promise<ResultType<AppClientModel, string>> => {
+  payload: CreateAppClientType,
+): Promise<ResultType<AppClientsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .insert(appClient)
+      .insert(appClients)
       .values({
         ...payload,
-        id: generateUUID,
+        id: generateUUID(),
       })
       .returning(),
   );
@@ -70,15 +70,19 @@ export const saveNewAppClient = async (
 export const saveAppClient = async (
   state: AppState,
   id: string,
-  payload: UpdateAppClientPayload,
-): Promise<ResultType<AppClientModel, string>> => {
+  payload: UpdateAppClientType,
+): Promise<ResultType<AppClientsModel, string>> => {
   const { db } = state;
   const changeSet = {
     ...payload,
     updatedAt: new Date().toISOString(),
   };
   const result = await Result.async(
-    db.update(appClient).set(changeSet).where(eq(appClient.id, id)).returning(),
+    db
+      .update(appClients)
+      .set(changeSet)
+      .where(eq(appClients.id, id))
+      .returning(),
   );
 
   if (!result.ok) {
@@ -99,7 +103,7 @@ export const deleteAppClientById = async (
 ): Promise<ResultType<void, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.delete(appClient).where(eq(appClient.id, id)),
+    db.delete(appClients).where(eq(appClients.id, id)),
   );
 
   if (!result.ok) {

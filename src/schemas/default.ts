@@ -51,11 +51,11 @@ export const attachments = sqliteTable("attachments", {
     .notNull(),
 });
 
-export type AttachmentModel = InferSelectModel<typeof attachment>;
+export type AttachmentsModel = InferSelectModel<typeof attachments>;
 
 // Chat System Schema
 
-export const appClient = sqliteTable("app_client", {
+export const appClients = sqliteTable("app_clients", {
   id: text("id").primaryKey(),
   name: text("name"), // APP Name
   createdAt: text("created_at")
@@ -66,12 +66,12 @@ export const appClient = sqliteTable("app_client", {
     .notNull(),
 });
 
-export type AppClientModel = InferSelectModel<typeof appClient>;
+export type AppClientsModel = InferSelectModel<typeof appClients>;
 
-export const chatUser = sqliteTable("chat_user", {
+export const chatUsers = sqliteTable("chat_users", {
   id: text("id").primaryKey(), // We'll use UUID or composite key logic, but simple ID is easier for referencing
   appId: text("app_id")
-    .references(() => appClient.id)
+    .references(() => appClients.id)
     .notNull(),
   name: text("name"),
   avatar: text("avatar"),
@@ -87,14 +87,14 @@ export const chatUser = sqliteTable("chat_user", {
     .notNull(),
 });
 
-export type ChatUserModel = InferSelectModel<typeof chatUser>;
+export type ChatUserModel = InferSelectModel<typeof chatUsers>;
 
-export const conversation = sqliteTable("conversation", {
+export const conversations = sqliteTable("conversations", {
   id: text("id").primaryKey(),
   appId: text("app_id").notNull(),
   type: text("type").notNull(), // 'DIRECT', 'GROUP'
   name: text("name"), // For groups
-  adminId: text("admin_id").references(() => chatUser.id), // Creator/Admin
+  adminId: text("admin_id").references(() => chatUsers.id), // Creator/Admin
   createdAt: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -103,14 +103,14 @@ export const conversation = sqliteTable("conversation", {
     .notNull(),
 });
 
-export type ConversationModel = InferSelectModel<typeof conversation>;
+export type ConversationModel = InferSelectModel<typeof conversations>;
 
-export const participant = sqliteTable("participant", {
+export const participants = sqliteTable("participants", {
   conversationId: text("conversation_id")
-    .references(() => conversation.id)
+    .references(() => conversations.id)
     .notNull(),
   userId: text("user_id")
-    .references(() => chatUser.id)
+    .references(() => chatUsers.id)
     .notNull(),
   joinedAt: text("joined_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -120,15 +120,15 @@ export const participant = sqliteTable("participant", {
   // Composite PK is usually handled via extra config, for now simple table
 });
 
-export type ParticipantModel = InferSelectModel<typeof participant>;
+export type ParticipantsModel = InferSelectModel<typeof participants>;
 
-export const message = sqliteTable("message", {
+export const messages = sqliteTable("messages", {
   id: text("id").primaryKey(),
   conversationId: text("conversation_id")
-    .references(() => conversation.id)
+    .references(() => conversations.id)
     .notNull(),
   senderId: text("sender_id")
-    .references(() => chatUser.id)
+    .references(() => chatUsers.id)
     .notNull(),
   type: text("type").notNull(), // 'TEXT', 'IMAGE', 'DOCUMENT', 'AUDIO', 'CALL'
   content: text("content"), // Text or URL
@@ -138,12 +138,12 @@ export const message = sqliteTable("message", {
     .notNull(),
 });
 
-export type MessageModel = InferSelectModel<typeof message>;
+export type MessagesModel = InferSelectModel<typeof messages>;
 
-export const call = sqliteTable("call", {
+export const calls = sqliteTable("calls", {
   id: text("id").primaryKey(),
   conversationId: text("conversation_id")
-    .references(() => conversation.id)
+    .references(() => conversations.id)
     .notNull(),
   startedAt: text("started_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -151,8 +151,8 @@ export const call = sqliteTable("call", {
   endedAt: text("ended_at"),
   status: text("status").notNull(), // 'ONGOING', 'ENDED'
   callerId: text("caller_id")
-    .references(() => chatUser.id)
+    .references(() => chatUsers.id)
     .notNull(),
 });
 
-export type CallModel = InferSelectModel<typeof call>;
+export type CallsModel = InferSelectModel<typeof calls>;

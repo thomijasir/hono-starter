@@ -1,19 +1,19 @@
 import { eq } from "drizzle-orm";
-import type { CreateMessagePayload } from "./model";
+import type { CreateMessageType } from "./model";
 import type { AppState } from "~/model";
-import type { MessageModel } from "~/schemas/default";
-import { message } from "~/schemas/default";
+import type { MessagesModel } from "~/schemas/default";
+import { messages } from "~/schemas/default";
 import type { ResultType } from "~/utils";
 import { Err, Ok, Result, generateUUID } from "~/utils";
 
 export const saveNewMessage = async (
   state: AppState,
-  payload: CreateMessagePayload,
-): Promise<ResultType<MessageModel, string>> => {
+  payload: CreateMessageType,
+): Promise<ResultType<MessagesModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .insert(message)
+      .insert(messages)
       .values({
         ...payload,
         id: generateUUID(),
@@ -22,12 +22,12 @@ export const saveNewMessage = async (
   );
 
   if (!result.ok) {
-    return Err("failed insert message");
+    return Err("failed insert messages");
   }
 
   const created = result.val[0];
   if (!created) {
-    return Err("failed insert message");
+    return Err("failed insert messages");
   }
 
   return Ok(created);
@@ -36,10 +36,13 @@ export const saveNewMessage = async (
 export const findMessagesByConversationId = async (
   state: AppState,
   conversationId: string,
-): Promise<ResultType<MessageModel[], string>> => {
+): Promise<ResultType<MessagesModel[], string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(message).where(eq(message.conversationId, conversationId)),
+    db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId)),
   );
 
   if (!result.ok) {
@@ -55,11 +58,11 @@ export const deleteMessageById = async (
 ): Promise<ResultType<void, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.delete(message).where(eq(message.id, id)),
+    db.delete(messages).where(eq(messages.id, id)),
   );
 
   if (!result.ok) {
-    return Err("failed delete message");
+    return Err("failed delete messages");
   }
 
   return Ok(undefined);

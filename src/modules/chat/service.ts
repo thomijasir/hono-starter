@@ -1,10 +1,10 @@
 import { sign } from "hono/jwt";
+import type { ConnectType } from "./model";
 import { CHAT_TOKEN_EXPIRED } from "~/constants";
 import { Err, Ok, Result } from "~/utils";
-import type { ConnectPayload } from "./model";
 
 export const signChatToken = async (
-  payload: ConnectPayload,
+  payload: ConnectType,
   secret: string,
 ) => {
   const now = Math.floor(Date.now() / 1000);

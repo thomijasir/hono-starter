@@ -1,11 +1,11 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "81675845-23d2-46a4-9be7-4fa65aacfd58",
+  "id": "2531bd0a-f2a6-43d4-9d8a-afa567934cfb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
-    "app_client": {
-      "name": "app_client",
+    "app_clients": {
+      "name": "app_clients",
       "columns": {
         "id": {
           "name": "id",
@@ -44,8 +44,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "attachment": {
-      "name": "attachment",
+    "attachments": {
+      "name": "attachments",
       "columns": {
         "id": {
           "name": "id",
@@ -112,8 +112,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "call": {
-      "name": "call",
+    "calls": {
+      "name": "calls",
       "columns": {
         "id": {
           "name": "id",
@@ -161,10 +161,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "call_conversation_id_conversation_id_fk": {
-          "name": "call_conversation_id_conversation_id_fk",
-          "tableFrom": "call",
-          "tableTo": "conversation",
+        "calls_conversation_id_conversations_id_fk": {
+          "name": "calls_conversation_id_conversations_id_fk",
+          "tableFrom": "calls",
+          "tableTo": "conversations",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -174,10 +174,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "call_caller_id_chat_user_id_fk": {
-          "name": "call_caller_id_chat_user_id_fk",
-          "tableFrom": "call",
-          "tableTo": "chat_user",
+        "calls_caller_id_chat_users_id_fk": {
+          "name": "calls_caller_id_chat_users_id_fk",
+          "tableFrom": "calls",
+          "tableTo": "chat_users",
           "columnsFrom": [
             "caller_id"
           ],
@@ -192,8 +192,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "chat_user": {
-      "name": "chat_user",
+    "chat_users": {
+      "name": "chat_users",
       "columns": {
         "id": {
           "name": "id",
@@ -270,10 +270,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "chat_user_app_id_app_client_id_fk": {
-          "name": "chat_user_app_id_app_client_id_fk",
-          "tableFrom": "chat_user",
-          "tableTo": "app_client",
+        "chat_users_app_id_app_clients_id_fk": {
+          "name": "chat_users_app_id_app_clients_id_fk",
+          "tableFrom": "chat_users",
+          "tableTo": "app_clients",
           "columnsFrom": [
             "app_id"
           ],
@@ -288,8 +288,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "conversation": {
-      "name": "conversation",
+    "conversations": {
+      "name": "conversations",
       "columns": {
         "id": {
           "name": "id",
@@ -345,10 +345,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "conversation_admin_id_chat_user_id_fk": {
-          "name": "conversation_admin_id_chat_user_id_fk",
-          "tableFrom": "conversation",
-          "tableTo": "chat_user",
+        "conversations_admin_id_chat_users_id_fk": {
+          "name": "conversations_admin_id_chat_users_id_fk",
+          "tableFrom": "conversations",
+          "tableTo": "chat_users",
           "columnsFrom": [
             "admin_id"
           ],
@@ -363,8 +363,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "message": {
-      "name": "message",
+    "messages": {
+      "name": "messages",
       "columns": {
         "id": {
           "name": "id",
@@ -419,10 +419,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "message_conversation_id_conversation_id_fk": {
-          "name": "message_conversation_id_conversation_id_fk",
-          "tableFrom": "message",
-          "tableTo": "conversation",
+        "messages_conversation_id_conversations_id_fk": {
+          "name": "messages_conversation_id_conversations_id_fk",
+          "tableFrom": "messages",
+          "tableTo": "conversations",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -432,10 +432,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "message_sender_id_chat_user_id_fk": {
-          "name": "message_sender_id_chat_user_id_fk",
-          "tableFrom": "message",
-          "tableTo": "chat_user",
+        "messages_sender_id_chat_users_id_fk": {
+          "name": "messages_sender_id_chat_users_id_fk",
+          "tableFrom": "messages",
+          "tableTo": "chat_users",
           "columnsFrom": [
             "sender_id"
           ],
@@ -450,8 +450,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "participant": {
-      "name": "participant",
+    "participants": {
+      "name": "participants",
       "columns": {
         "conversation_id": {
           "name": "conversation_id",
@@ -492,10 +492,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "participant_conversation_id_conversation_id_fk": {
-          "name": "participant_conversation_id_conversation_id_fk",
-          "tableFrom": "participant",
-          "tableTo": "conversation",
+        "participants_conversation_id_conversations_id_fk": {
+          "name": "participants_conversation_id_conversations_id_fk",
+          "tableFrom": "participants",
+          "tableTo": "conversations",
           "columnsFrom": [
             "conversation_id"
           ],
@@ -505,10 +505,10 @@
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "participant_user_id_chat_user_id_fk": {
-          "name": "participant_user_id_chat_user_id_fk",
-          "tableFrom": "participant",
-          "tableTo": "chat_user",
+        "participants_user_id_chat_users_id_fk": {
+          "name": "participants_user_id_chat_users_id_fk",
+          "tableFrom": "participants",
+          "tableTo": "chat_users",
           "columnsFrom": [
             "user_id"
           ],
@@ -523,8 +523,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "post": {
-      "name": "post",
+    "posts": {
+      "name": "posts",
       "columns": {
         "id": {
           "name": "id",
@@ -587,10 +587,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "post_author_id_user_id_fk": {
-          "name": "post_author_id_user_id_fk",
-          "tableFrom": "post",
-          "tableTo": "user",
+        "posts_author_id_users_id_fk": {
+          "name": "posts_author_id_users_id_fk",
+          "tableFrom": "posts",
+          "tableTo": "users",
           "columnsFrom": [
             "author_id"
           ],
@@ -605,8 +605,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "user": {
-      "name": "user",
+    "users": {
+      "name": "users",
       "columns": {
         "id": {
           "name": "id",
@@ -654,8 +654,8 @@
         }
       },
       "indexes": {
-        "user_email_unique": {
-          "name": "user_email_unique",
+        "users_email_unique": {
+          "name": "users_email_unique",
           "columns": [
             "email"
           ],

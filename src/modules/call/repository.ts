@@ -1,19 +1,19 @@
 import { eq } from "drizzle-orm";
-import type { CreateCallPayload, UpdateCallPayload } from "./model";
+import type { CreateCallType, UpdateCallType } from "./model";
 import type { AppState } from "~/model";
-import type { CallModel } from "~/schemas/default";
-import { call } from "~/schemas/default";
+import type { CallsModel } from "~/schemas/default";
+import { calls } from "~/schemas/default";
 import type { ResultType } from "~/utils";
 import { Err, Ok, Result, generateUUID } from "~/utils";
 
 export const saveNewCall = async (
   state: AppState,
-  payload: CreateCallPayload,
-): Promise<ResultType<CallModel, string>> => {
+  payload: CreateCallType,
+): Promise<ResultType<CallsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .insert(call)
+      .insert(calls)
       .values({
         ...payload,
         id: generateUUID(),
@@ -22,12 +22,12 @@ export const saveNewCall = async (
   );
 
   if (!result.ok) {
-    return Err("failed insert call");
+    return Err("failed insert calls");
   }
 
   const created = result.val[0];
   if (!created) {
-    return Err("failed insert call");
+    return Err("failed insert calls");
   }
 
   return Ok(created);
@@ -36,10 +36,10 @@ export const saveNewCall = async (
 export const findCallById = async (
   state: AppState,
   id: string,
-): Promise<ResultType<CallModel, string>> => {
+): Promise<ResultType<CallsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(call).where(eq(call.id, id)),
+    db.select().from(calls).where(eq(calls.id, id)),
   );
 
   if (!result.ok) {
@@ -48,7 +48,7 @@ export const findCallById = async (
 
   const found = result.val[0];
   if (!found) {
-    return Err("Call not found");
+    return Err("calls not found");
   }
 
   return Ok(found);
@@ -57,10 +57,10 @@ export const findCallById = async (
 export const findCallsByConversationId = async (
   state: AppState,
   conversationId: string,
-): Promise<ResultType<CallModel[], string>> => {
+): Promise<ResultType<CallsModel[], string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(call).where(eq(call.conversationId, conversationId)),
+    db.select().from(calls).where(eq(calls.conversationId, conversationId)),
   );
 
   if (!result.ok) {
@@ -73,10 +73,10 @@ export const findCallsByConversationId = async (
 export const findCallsByCallerId = async (
   state: AppState,
   callerId: string,
-): Promise<ResultType<CallModel[], string>> => {
+): Promise<ResultType<CallsModel[], string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(call).where(eq(call.callerId, callerId)),
+    db.select().from(calls).where(eq(calls.callerId, callerId)),
   );
 
   if (!result.ok) {
@@ -89,20 +89,20 @@ export const findCallsByCallerId = async (
 export const saveCall = async (
   state: AppState,
   id: string,
-  payload: UpdateCallPayload,
-): Promise<ResultType<CallModel, string>> => {
+  payload: UpdateCallType,
+): Promise<ResultType<CallsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.update(call).set(payload).where(eq(call.id, id)).returning(),
+    db.update(calls).set(payload).where(eq(calls.id, id)).returning(),
   );
 
   if (!result.ok) {
-    return Err("failed update call");
+    return Err("failed update calls");
   }
 
   const updated = result.val[0];
   if (!updated) {
-    return Err("failed update call");
+    return Err("failed update calls");
   }
 
   return Ok(updated);
@@ -113,10 +113,10 @@ export const deleteCallById = async (
   id: string,
 ): Promise<ResultType<void, string>> => {
   const { db } = state;
-  const result = await Result.async(db.delete(call).where(eq(call.id, id)));
+  const result = await Result.async(db.delete(calls).where(eq(calls.id, id)));
 
   if (!result.ok) {
-    return Err("failed delete call");
+    return Err("failed delete calls");
   }
 
   return Ok(undefined);

@@ -1,10 +1,10 @@
-import type { ParticipantModel } from "~/schemas/default";
+import type { ParticipantsModel } from "~/schemas/default";
 
-export type AddParticipantPayload = Pick<
-  ParticipantModel,
+export type AddParticipantType = Pick<
+  ParticipantsModel,
   "conversationId" | "userId"
 >;
 
-export type UpdateParticipantPayload = Partial<
-  Pick<ParticipantModel, "lastReadAt" | "lastReadMessageId">
+export type UpdateParticipantType = Partial<
+  Pick<ParticipantsModel, "lastReadAt" | "lastReadMessageId">
 >;

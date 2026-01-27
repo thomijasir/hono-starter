@@ -1,8 +1,8 @@
-import type { AppClientModel } from "~/schemas/default";
+import type { AppClientsModel } from "~/schemas/default";
 
-export type CreateAppClientPayload = Omit<
-  AppClientModel,
+export type CreateAppClientType = Omit<
+  AppClientsModel,
   "id" | "createdAt" | "updatedAt"
 >;
 
-export type UpdateAppClientPayload = Partial<CreateAppClientPayload>;
+export type UpdateAppClientType = Partial<CreateAppClientType>;

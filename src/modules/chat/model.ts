@@ -11,4 +11,4 @@ export const ConnectSchema = z.object({
   deviceType: z.enum(["ANDROID", "IOS", "WEB"]).optional(),
 });
 
-export type ConnectPayload = z.infer<typeof ConnectSchema>;
+export type ConnectType = z.infer<typeof ConnectSchema>;

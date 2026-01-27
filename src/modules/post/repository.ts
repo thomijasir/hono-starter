@@ -85,7 +85,7 @@ export const saveNewPost = async (
     return Err("failed insert posts");
   }
 
-  return Ok(resultPost);
+  return Ok(newPost);
 };
 
 export const savePost = async (

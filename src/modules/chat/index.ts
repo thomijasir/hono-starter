@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { validator } from "~/middlewares";
-import { ConnectSchema } from "./model";
 import { connect } from "./controller";
+import { ConnectSchema } from "./model";
+import { validator } from "~/middlewares";
 
 export const chatModule = () => {
   const routes = new Hono();

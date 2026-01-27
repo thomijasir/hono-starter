@@ -1,3 +1,3 @@
-import type { MessageModel } from "~/schemas/default";
+import type { MessagesModel } from "~/schemas/default";
 
-export type CreateMessagePayload = Omit<MessageModel, "id" | "createdAt">;
+export type CreateMessageType = Omit<MessagesModel, "id" | "createdAt">;

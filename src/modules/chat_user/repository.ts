@@ -1,18 +1,18 @@
-import type { AppState } from "~/model";
-import { Err, nowDate, nowUnix, Ok, Result } from "~/utils";
-import { chatUser } from "~/schemas/default";
-import type { ConnectPayload } from "../chat/model";
+import type { ConnectType } from "../chat/model";
 import { CHAT_TOKEN_EXPIRED } from "~/constants";
+import type { AppState } from "~/model";
+import { chatUsers } from "~/schemas/default";
+import { Err, nowDate, nowUnix, Ok, Result } from "~/utils";
 
 export const saveOrUpdateChatUser = async (
   state: AppState,
-  payload: ConnectPayload,
+  payload: ConnectType,
 ) => {
   const { db } = state;
   const lastSeen = new Date(nowUnix() + CHAT_TOKEN_EXPIRED).toISOString();
   const result = await Result.async(
     db
-      .insert(chatUser)
+      .insert(chatUsers)
       .values({
         id: `${payload.appId}_${payload.username}`, // Composite ID simulation
         appId: payload.appId,
@@ -24,7 +24,7 @@ export const saveOrUpdateChatUser = async (
         lastSeen: lastSeen,
       })
       .onConflictDoUpdate({
-        target: chatUser.id,
+        target: chatUsers.id,
         set: {
           lastSeen: lastSeen,
           deviceToken: payload.deviceToken,
