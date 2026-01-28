@@ -11,6 +11,11 @@ import {
   postRoutes,
   userRoutes,
   attachmentRoutes,
+  chatRoutes,
+  appClientRoutes,
+  callRoutes,
+  conversationRoutes,
+  messageRoutes,
 } from "~/modules";
 import { createRouter, errorResponse, log } from "~/utils";
 
@@ -62,9 +67,20 @@ export const createApp = (state: AppState) => {
   app.route("/post", postRoutes());
   app.route("/auth", authRoutes());
   app.route("/attachment", attachmentRoutes());
+  app.route("/chat", chatRoutes());
+  app.route("/app-client", appClientRoutes());
+  app.route("/call", callRoutes());
+  app.route("/conversation", conversationRoutes());
+  app.route("/message", messageRoutes());
 
   // OpenAPI Docs Spec
-  app.openAPIRegistry.registerComponent("securitySchemes", "Bearer", {
+  app.openAPIRegistry.registerComponent("securitySchemes", "PortalBearer", {
+    type: "http",
+    scheme: "bearer",
+    bearerFormat: "JWT",
+  });
+
+  app.openAPIRegistry.registerComponent("securitySchemes", "ChatBearer", {
     type: "http",
     scheme: "bearer",
     bearerFormat: "JWT",

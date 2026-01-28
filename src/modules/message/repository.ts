@@ -1,69 +1,99 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { CreateMessageType } from "./model";
 import type { AppState } from "~/model";
-import type { MessagesModel } from "~/schemas/default";
 import { messages } from "~/schemas/default";
-import type { ResultType } from "~/utils";
-import { Err, Ok, Result, generateUUID } from "~/utils";
+import { Err, Ok, Result } from "~/utils";
 
-export const saveNewMessage = async (
-  state: AppState,
-  payload: CreateMessageType,
-): Promise<ResultType<MessagesModel, string>> => {
-  const { db } = state;
+export const findMessageById = async (state: AppState, id: string) => {
   const result = await Result.async(
-    db
-      .insert(messages)
-      .values({
-        ...payload,
-        id: generateUUID(),
-      })
-      .returning(),
+    state.db.select().from(messages).where(eq(messages.id, id)),
   );
 
   if (!result.ok) {
-    return Err("failed insert messages");
+    return Err(result.err);
   }
 
-  const created = result.val[0];
-  if (!created) {
-    return Err("failed insert messages");
+  if (result.val.length === 0) {
+    return Err("Message not found");
   }
 
-  return Ok(created);
+  return Ok(result.val[0]);
 };
 
 export const findMessagesByConversationId = async (
   state: AppState,
   conversationId: string,
-): Promise<ResultType<MessagesModel[], string>> => {
-  const { db } = state;
+  page: number = 1,
+  limit: number = 20,
+) => {
+  const offset = (page - 1) * limit;
+
   const result = await Result.async(
-    db
+    state.db
       .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(sql`${messages.createdAt} DESC`) // Newest first usually
+      .limit(limit)
+      .offset(offset),
+  );
+
+  if (!result.ok) {
+    return Err(result.err);
+  }
+
+  const total = await Result.async(
+    state.db
+      .select({ count: sql<number>`count(*)` })
       .from(messages)
       .where(eq(messages.conversationId, conversationId)),
   );
 
-  if (!result.ok) {
-    return Err("database error");
-  }
+  const totalCount = total.ok && total.val[0] ? total.val[0].count : 0;
 
-  return Ok(result.val);
+  return Ok({ messages: result.val, total: totalCount });
 };
 
-export const deleteMessageById = async (
+export const saveNewMessage = async (
   state: AppState,
-  id: string,
-): Promise<ResultType<void, string>> => {
-  const { db } = state;
+  payload: CreateMessageType,
+) => {
+  const id = crypto.randomUUID();
   const result = await Result.async(
-    db.delete(messages).where(eq(messages.id, id)),
+    state.db
+      .insert(messages)
+      .values({ ...payload, id })
+      .returning(),
   );
 
   if (!result.ok) {
-    return Err("failed delete messages");
+    return Err(result.err);
   }
 
-  return Ok(undefined);
+  return Ok(result.val[0]);
+};
+
+export const updateMessage = async (
+  state: AppState,
+  id: string,
+  payload: Partial<CreateMessageType>,
+) => {
+  const result = await Result.async(
+    state.db
+      .update(messages)
+      .set(payload)
+      // TODO: Add updatedAt column to messages table in schema
+      .where(eq(messages.id, id))
+      .returning(),
+  );
+
+  if (!result.ok) {
+    return Err(result.err);
+  }
+
+  if (result.val.length === 0) {
+    return Err("Message not found");
+  }
+
+  return Ok(result.val[0]);
 };

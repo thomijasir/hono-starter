@@ -14,11 +14,11 @@ export const saveOrUpdateChatUser = async (
     db
       .insert(chatUsers)
       .values({
-        id: `${payload.appId}_${payload.username}`, // Composite ID simulation
+        id: `${payload.appId}|${payload.externalId}`, // Composite ID simulation
         appId: payload.appId,
         name: payload.name,
         avatar: payload.avatar,
-        email: payload.email,
+        email: `${payload.appId}|${payload.email}`,
         deviceToken: payload.deviceToken,
         deviceType: payload.deviceType,
         lastSeen: lastSeen,

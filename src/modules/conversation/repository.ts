@@ -1,153 +1,120 @@
-import { eq, and, exists, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type {
   CreateConversationPayload,
   UpdateConversationPayload,
 } from "./model";
 import type { AppState } from "~/model";
-import type { ConversationModel } from "~/schemas/default";
-import { conversation, participant } from "~/schemas/default";
-import type { ResultType } from "~/utils";
-import { Err, Ok, Result, generateUUID } from "~/utils";
+import { conversations, participants } from "~/schemas/default";
+import { Err, Ok, Result } from "~/utils";
 
-export const findConversationById = async (
-  state: AppState,
-  id: string,
-): Promise<ResultType<ConversationModel, string>> => {
-  const { db } = state;
+export const findConversationById = async (state: AppState, id: string) => {
   const result = await Result.async(
-    db.select().from(conversation).where(eq(conversation.id, id)),
+    state.db.select().from(conversations).where(eq(conversations.id, id)),
   );
 
   if (!result.ok) {
-    return Err("database error");
+    return Err(result.err);
   }
 
-  const found = result.val[0];
-  if (!found) {
+  if (result.val.length === 0) {
     return Err("Conversation not found");
   }
 
-  return Ok(found);
+  return Ok(result.val[0]);
 };
 
-export const findConversationsByAppId = async (
+export const findAllConversations = async (
   state: AppState,
-  appId: string,
-): Promise<ResultType<ConversationModel[], string>> => {
-  const { db } = state;
+  page: number = 1,
+  limit: number = 10,
+) => {
+  const offset = (page - 1) * limit;
+
   const result = await Result.async(
-    db.select().from(conversation).where(eq(conversation.appId, appId)),
+    state.db.select().from(conversations).limit(limit).offset(offset),
   );
 
   if (!result.ok) {
-    return Err("database error");
+    return Err(result.err);
   }
 
-  return Ok(result.val);
-};
-
-export const findConversationsByUserId = async (
-  state: AppState,
-  userId: string,
-): Promise<ResultType<ConversationModel[], string>> => {
-  const { db } = state;
-
-  // Select conversations where the user is a participant
-  const result = await Result.async(
-    db
-      .select()
-      .from(conversation)
-      .where(
-        exists(
-          db
-            .select()
-            .from(participant)
-            .where(
-              and(
-                eq(participant.conversationId, conversation.id),
-                eq(participant.userId, userId),
-              ),
-            ),
-        ),
-      ),
+  const total = await Result.async(
+    state.db.select({ count: sql<number>`count(*)` }).from(conversations),
   );
+  const totalCount = total.ok && total.val[0] ? total.val[0].count : 0;
 
-  if (!result.ok) {
-    return Err("database error");
-  }
-
-  return Ok(result.val);
+  return Ok({ conversations: result.val, total: totalCount });
 };
 
 export const saveNewConversation = async (
   state: AppState,
   payload: CreateConversationPayload,
-): Promise<ResultType<ConversationModel, string>> => {
-  const { db } = state;
-  const result = await Result.async(
-    db
-      .insert(conversation)
-      .values({
-        ...payload,
-        id: generateUUID(),
-      })
-      .returning(),
+) => {
+  const { participants: participantIds, ...conversationData } = payload;
+
+  // Generate ID explicitly since we are using text primary key for conversations
+  const id = crypto.randomUUID();
+
+  // Transaction to create conversation and add participants
+  const transactionResult = await Result.async(
+    state.db.transaction(async (tx) => {
+      const [newConversation] = await tx
+        .insert(conversations)
+        .values({ ...conversationData, id })
+        .returning();
+
+      if (participantIds && participantIds.length > 0 && newConversation) {
+        await tx.insert(participants).values(
+          participantIds.map((userId) => ({
+            conversationId: newConversation.id,
+            userId,
+          })),
+        );
+      }
+
+      if (!newConversation) return undefined;
+      return newConversation;
+    }),
   );
 
-  if (!result.ok) {
-    return Err("failed insert conversation");
+  if (!transactionResult.ok) {
+    return Err(transactionResult.err);
   }
 
-  const created = result.val[0];
-  if (!created) {
-    return Err("failed insert conversation");
+  if (!transactionResult.val) {
+    return Err("Failed to create conversation");
   }
 
-  return Ok(created);
+  return Ok(transactionResult.val);
 };
 
 export const saveConversation = async (
   state: AppState,
   id: string,
   payload: UpdateConversationPayload,
-): Promise<ResultType<ConversationModel, string>> => {
-  const { db } = state;
-  const changeSet = {
-    ...payload,
-    updatedAt: new Date().toISOString(),
-  };
+) => {
   const result = await Result.async(
-    db
-      .update(conversation)
-      .set(changeSet)
-      .where(eq(conversation.id, id))
+    state.db
+      .update(conversations)
+      .set({ ...payload, updatedAt: sql`CURRENT_TIMESTAMP` })
+      .where(eq(conversations.id, id))
       .returning(),
   );
 
-  if (!result.ok) {
-    return Err("failed update conversation");
-  }
+  if (!result.ok) return Err(result.err);
+  if (result.val.length === 0) return Err("Conversation not found");
 
-  const updated = result.val[0];
-  if (!updated) {
-    return Err("failed update conversation");
-  }
-
-  return Ok(updated);
+  return Ok(result.val[0]);
 };
 
-export const deleteConversationById = async (
-  state: AppState,
-  id: string,
-): Promise<ResultType<void, string>> => {
-  const { db } = state;
+export const deleteConversationById = async (state: AppState, id: string) => {
   const result = await Result.async(
-    db.delete(conversation).where(eq(conversation.id, id)),
+    state.db.delete(conversations).where(eq(conversations.id, id)),
   );
 
   if (!result.ok) {
-    return Err("failed delete conversation");
+    return Err(result.err);
   }
 
-  return Ok(undefined);
+  return Ok(null);
 };

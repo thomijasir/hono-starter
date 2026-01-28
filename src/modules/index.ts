@@ -1,5 +1,9 @@
 export { userRoutes } from "./user";
 export { postRoutes } from "./post";
 export { authRoutes } from "./auth";
-export { chatModule } from "./chat";
+export { chatRoutes } from "./chat";
 export { attachmentRoutes } from "./attachment";
+export { appClientRoutes } from "./app_client";
+export { callRoutes } from "./call";
+export { conversationRoutes } from "./conversation";
+export { messageRoutes } from "./message";

@@ -3,7 +3,7 @@ import type { ConnectType } from "./model";
 import { signChatToken } from "./service";
 import { createJsonHandler } from "~/utils";
 
-export const connect = createJsonHandler<ConnectType>(
+export const connect = createJsonHandler<ConnectType, { token: string }>(
   async ({ state, body, httpResponse, errorResponse }) => {
     const resultUser = await saveOrUpdateChatUser(state, body);
 

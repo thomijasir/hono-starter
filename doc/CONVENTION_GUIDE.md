@@ -165,12 +165,12 @@ This project follows a strict 4-layer architecture. To ensure code maintainabili
 
 ### The Core Concept: "The Verb Hierarchy"
 
-| Layer          | Responsibility   | Naming Convention               | Primary Verbs                                |
-| -------------- | ---------------- | ------------------------------- | -------------------------------------------- |
-| **Controller** | HTTP Handling    | `[Verb][Entity]` or `[Verb]`    | `get`, `create`, `update`, `delete`, `login` |
-| **Service**    | Business Logic   | `[Action][Entity]`              | `register`, `process`, `verify`, `sign`      |
-| **Repository** | Data Access      | `[StorageOp][Entity][Criteria]` | `find...By...`, `save...`, `delete...`       |
-| **Model**      | Type Definitions | `[Noun]`                        | N/A                                          |
+| Layer          | Responsibility   | Naming Convention                    | Primary Verbs                                |
+| -------------- | ---------------- | ------------------------------------ | -------------------------------------------- |
+| **Controller** | HTTP Handling    | `[Verb][Entity]` or `[Verb]`         | `get`, `create`, `update`, `delete`, `login` |
+| **Service**    | Business Logic   | `[Action][Entity]`                   | `register`, `process`, `verify`, `sign`      |
+| **Repository** | Data Access      | `[StorageOp][Entity][Criteria]`      | `find...By...`, `save...`, `delete...`       |
+| **Model**      | Type Definitions | suffix add schema zod and type infer | CreateUserSchema, CreateUserType             |
 
 ---
 

@@ -1,19 +1,19 @@
 import { eq, and } from "drizzle-orm";
-import type { AddParticipantPayload, UpdateParticipantPayload } from "./model";
+import type { AddParticipantType, UpdateParticipantType } from "./model";
 import type { AppState } from "~/model";
-import type { ParticipantModel } from "~/schemas/default";
-import { participant } from "~/schemas/default";
+import type { ParticipantsModel } from "~/schemas/default";
+import { participants } from "~/schemas/default";
 import type { ResultType } from "~/utils";
 import { Err, Ok, Result, nowDate } from "~/utils";
 
 export const addParticipant = async (
   state: AppState,
-  payload: AddParticipantPayload,
-): Promise<ResultType<ParticipantModel, string>> => {
+  payload: AddParticipantType,
+): Promise<ResultType<ParticipantsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .insert(participant)
+      .insert(participants)
       .values({
         ...payload,
         joinedAt: nowDate(),
@@ -22,12 +22,12 @@ export const addParticipant = async (
   );
 
   if (!result.ok) {
-    return Err("failed add participant");
+    return Err("failed add participants");
   }
 
   const added = result.val[0];
   if (!added) {
-    return Err("failed add participant");
+    return Err("failed add participants");
   }
 
   return Ok(added);
@@ -36,13 +36,13 @@ export const addParticipant = async (
 export const findParticipantsByConversationId = async (
   state: AppState,
   conversationId: string,
-): Promise<ResultType<ParticipantModel[], string>> => {
+): Promise<ResultType<ParticipantsModel[], string>> => {
   const { db } = state;
   const result = await Result.async(
     db
       .select()
-      .from(participant)
-      .where(eq(participant.conversationId, conversationId)),
+      .from(participants)
+      .where(eq(participants.conversationId, conversationId)),
   );
 
   if (!result.ok) {
@@ -55,10 +55,10 @@ export const findParticipantsByConversationId = async (
 export const findParticipantsByUserId = async (
   state: AppState,
   userId: string,
-): Promise<ResultType<ParticipantModel[], string>> => {
+): Promise<ResultType<ParticipantsModel[], string>> => {
   const { db } = state;
   const result = await Result.async(
-    db.select().from(participant).where(eq(participant.userId, userId)),
+    db.select().from(participants).where(eq(participants.userId, userId)),
   );
 
   if (!result.ok) {
@@ -72,16 +72,16 @@ export const findParticipant = async (
   state: AppState,
   conversationId: string,
   userId: string,
-): Promise<ResultType<ParticipantModel, string>> => {
+): Promise<ResultType<ParticipantsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
       .select()
-      .from(participant)
+      .from(participants)
       .where(
         and(
-          eq(participant.conversationId, conversationId),
-          eq(participant.userId, userId),
+          eq(participants.conversationId, conversationId),
+          eq(participants.userId, userId),
         ),
       ),
   );
@@ -92,7 +92,7 @@ export const findParticipant = async (
 
   const found = result.val[0];
   if (!found) {
-    return Err("Participant not found");
+    return Err("participants not found");
   }
 
   return Ok(found);
@@ -102,29 +102,29 @@ export const updateParticipant = async (
   state: AppState,
   conversationId: string,
   userId: string,
-  payload: UpdateParticipantPayload,
-): Promise<ResultType<ParticipantModel, string>> => {
+  payload: UpdateParticipantType,
+): Promise<ResultType<ParticipantsModel, string>> => {
   const { db } = state;
   const result = await Result.async(
     db
-      .update(participant)
+      .update(participants)
       .set(payload)
       .where(
         and(
-          eq(participant.conversationId, conversationId),
-          eq(participant.userId, userId),
+          eq(participants.conversationId, conversationId),
+          eq(participants.userId, userId),
         ),
       )
       .returning(),
   );
 
   if (!result.ok) {
-    return Err("failed update participant");
+    return Err("failed update participants");
   }
 
   const updated = result.val[0];
   if (!updated) {
-    return Err("failed update participant");
+    return Err("failed update participants");
   }
 
   return Ok(updated);
@@ -138,17 +138,17 @@ export const removeParticipant = async (
   const { db } = state;
   const result = await Result.async(
     db
-      .delete(participant)
+      .delete(participants)
       .where(
         and(
-          eq(participant.conversationId, conversationId),
-          eq(participant.userId, userId),
+          eq(participants.conversationId, conversationId),
+          eq(participants.userId, userId),
         ),
       ),
   );
 
   if (!result.ok) {
-    return Err("failed remove participant");
+    return Err("failed remove participants");
   }
 
   return Ok(undefined);

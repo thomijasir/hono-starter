@@ -4,21 +4,26 @@ import type { BunSQLDatabase } from "drizzle-orm/bun-sql";
 import { drizzle as drizzleSql } from "drizzle-orm/bun-sql";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import { drizzle as drizzleSqlite } from "drizzle-orm/bun-sqlite";
+import * as schema from "~/schemas/default";
 import { log } from "~/utils";
 
 export type DbDriver = "SQLITE" | "PGSQL" | "MYSQL";
-export type DrizzleDBSqlite = BunSQLiteDatabase;
+export type DrizzleDBSqlite = BunSQLiteDatabase<typeof schema>;
 export type DrizzleDBSql = BunSQLDatabase;
 
 export class DBSqliteService {
   public client: BunSQLite;
-  public db: BunSQLiteDatabase;
+  public db: DrizzleDBSqlite;
   public driver = "SQLITE" as const;
 
   constructor(url: string) {
     const dbName = url;
     this.client = new BunSQLite(dbName);
-    this.db = drizzleSqlite({ client: this.client, casing: "snake_case" });
+    this.db = drizzleSqlite({
+      client: this.client,
+      casing: "snake_case",
+      schema,
+    });
     log.info(`[Database] Initializing connection for driver: ${this.driver}`);
   }
 
