@@ -5,7 +5,7 @@ import { requestId } from "hono/request-id";
 import path from "node:path";
 import packageJSON from "../package.json" with { type: "json" };
 import { logger } from "~/middlewares";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import {
   authRoutes,
   postRoutes,

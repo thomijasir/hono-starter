@@ -1,6 +1,6 @@
 import { createMiddleware } from "hono/factory";
 import { jwt } from "hono/jwt";
-import type { AppOpenApi } from "~/model";
+import type { AppOpenApi } from "~/models";
 import { errorResponse, Result } from "~/utils";
 
 export const auth = createMiddleware<AppOpenApi>(async (c, next) => {

@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { CreatePostType, UpdatePostType } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import type { PostsModel } from "~/schemas/default";
 import { posts } from "~/schemas/default";
 import type { ResultType } from "~/utils";

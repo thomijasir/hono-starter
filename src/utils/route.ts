@@ -1,7 +1,7 @@
 import { OpenAPIHono } from "@hono/zod-openapi";
 import z from "zod";
 import { jsonErrorResponseSchema, errorResponse } from "./response";
-import type { AppOpenApi } from "~/model";
+import type { AppOpenApi } from "~/models";
 
 export const createRouter = () => {
   const routes = new OpenAPIHono<AppOpenApi>({
