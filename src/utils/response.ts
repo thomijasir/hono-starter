@@ -1,11 +1,52 @@
+import { z } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { ApiResponse, PaginationMeta } from "~/model";
+import type { ApiResponse, PaginationMeta, ErrorApiResponse } from "~/models";
+
+/**
+ * Standardized Success Response Schema Factory
+ */
+export const jsonResponseSchema = <T extends z.ZodType>(dataSchema: T) =>
+  z.object({
+    success: z.boolean().openapi({ example: true }),
+    message: z.string().openapi({ example: "Success" }),
+    data: dataSchema,
+  });
+
+/**
+ * Standardized Success Response Schema With Pagination Factory
+ */
+export const jsonResponsePaginationSchema = <T extends z.ZodType>(
+  dataSchema: T,
+) =>
+  z.object({
+    success: z.boolean().openapi({ example: true }),
+    message: z.string().openapi({ example: "Success" }),
+    data: dataSchema,
+    meta: z
+      .object({
+        page: z.number().openapi({ example: 1 }),
+        limit: z.number().openapi({ example: 10 }),
+        total: z.number().openapi({ example: 100 }),
+        totalPages: z.number().optional().openapi({ example: 10 }),
+      })
+      .optional(),
+  });
+
+/**
+ * Standardized Error Response Schema Factory
+ */
+export const jsonErrorResponseSchema = () =>
+  z.object({
+    success: z.boolean().openapi({ example: false }),
+    message: z.string().openapi({ example: "Error" }),
+    error: z.null().or(z.any()), // Allow null or any detailed error structure
+  });
 
 /**
  * Standardized Success Response
  */
-export const httpResponse = <T>(
+export const httpResponse = <T,>(
   ctx: Context,
   data: T,
   message: string = "Success",
@@ -14,7 +55,7 @@ export const httpResponse = <T>(
 ) => {
   return ctx.json(
     {
-      status: "success",
+      success: true,
       message,
       data,
       meta,
@@ -34,10 +75,10 @@ export const errorResponse = (
 ) => {
   return ctx.json(
     {
-      status: "error",
+      success: false,
       message,
-      data: errors,
-    } satisfies ApiResponse,
+      error: errors,
+    } satisfies ErrorApiResponse,
     status,
   );
 };

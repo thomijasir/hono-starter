@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 coverage
+drizzle
+public/uploads
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +26,4 @@ coverage
 *.sln
 *.sw?
 .env
+sqlite.db

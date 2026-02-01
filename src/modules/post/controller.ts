@@ -1,23 +1,109 @@
-import * as postService from "./service";
-import { createHandler  } from "~/utils";
-import type {HandlerContext} from "~/utils";
+import type { JWTAuthDataType } from "../auth/model";
+import type { CreatePostType, UpdatePostType } from "./model";
+import {
+  saveNewPost,
+  deletePostById,
+  findPostById,
+  savePost,
+  findAllPosts,
+} from "./repository";
+import type { PostsModel } from "~/schemas/default";
+import { createHandler, createJsonHandler, Ok, Result } from "~/utils";
 
 export const getAllPosts = createHandler(
-  ({ httpResponse }: HandlerContext) => {
-    const posts = postService.getPosts();
-    return httpResponse(posts);
+  async ({ query, state, httpResponse, errorResponse }) => {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const result = await findAllPosts(state, page, limit);
+    if (!result.ok) {
+      return errorResponse(result.err);
+    }
+
+    const { posts, total } = result.val;
+    return httpResponse(posts, "Posts fetched successfully", 200, {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   },
 );
 
 export const getPost = createHandler(
-  ({ params, httpResponse, errorResponse }: HandlerContext) => {
+  async ({ state, params, httpResponse, errorResponse }) => {
     const id = Number(params.id);
-    const post = postService.getPostById(id);
+    const postResult = await findPostById(state, id);
 
-    if (!post) {
-      return errorResponse("Post not found", 404);
+    if (!postResult.ok) {
+      return errorResponse(postResult.err, 404);
     }
 
-    return httpResponse(post);
+    return httpResponse(postResult.val);
   },
 );
+
+export const createPost = createJsonHandler<
+  CreatePostType,
+  PostsModel,
+  JWTAuthDataType
+>(async ({ state, body, claim, httpResponse, errorResponse }) => {
+  const postResult = await saveNewPost(state, claim.id, body);
+
+  if (!postResult.ok) {
+    return errorResponse(postResult.err);
+  }
+
+  return httpResponse(postResult.val, "Post created successfully", 201);
+});
+
+export const updatePost = createJsonHandler<
+  UpdatePostType,
+  PostsModel,
+  JWTAuthDataType
+>(async ({ state, params, body, claim, httpResponse, errorResponse }) => {
+  if (!params.id) {
+    return errorResponse("params is required");
+  }
+  const id = Number(params.id);
+  const chainResult = await Result.chain(
+    findPostById(state, id),
+    (existingPost: PostsModel) => {
+      if (existingPost.authorId !== claim.id) {
+        return { ok: false, err: "Forbidden" };
+      }
+      return Ok(existingPost);
+    },
+    () => savePost(state, id, body),
+  );
+
+  if (!chainResult.ok) {
+    return errorResponse(chainResult.err);
+  }
+
+  return httpResponse(chainResult.val, "Post updated successfully");
+});
+
+export const deletePost = createHandler<
+  unknown,
+  JWTAuthDataType,
+  { id: string }
+>(async ({ state, params, claim, httpResponse, errorResponse }) => {
+  const id = Number(params.id);
+
+  const chainResult = await Result.chain(
+    findPostById(state, id),
+    (existingPost: PostsModel) => {
+      if (existingPost.authorId !== claim.id) {
+        return { ok: false, err: "Forbidden" };
+      }
+      return Ok(existingPost);
+    },
+    () => deletePostById(state, id),
+  );
+
+  if (!chainResult.ok) {
+    return errorResponse(chainResult.err);
+  }
+
+  return httpResponse(null, "post deleted successfully");
+});

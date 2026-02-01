@@ -1,5 +1,8 @@
 import { ENVIRONMENT } from "~/constants";
-import type { AppState, DatabaseConnection } from "~/model";
+import type { AppState } from "~/models";
+import { DBSqliteService } from "~/services";
+import { log } from "~/utils";
+
 // Simulate loading configuration from file/env
 const loadConfig = () => {
   return {
@@ -8,49 +11,27 @@ const loadConfig = () => {
     dbUrl: ENVIRONMENT.DB_URL,
     useHttps: ENVIRONMENT.USE_HTTPS,
     jwtSecret: ENVIRONMENT.JWT_SECRET,
-  };
-};
-
-// Simulate a Database Connection Pool
-const createDbConnection = async (url: string): Promise<DatabaseConnection> => {
-  // eslint-disable-next-line no-console
-  console.log(`[System] Initializing Database Connection Pool to ${url}...`);
-
-  // Simulate async connection delay
-  await new Promise((resolve) => setTimeout(resolve, 500));
-
-  // eslint-disable-next-line no-console
-  console.log(`[System] Database Connected.`);
-
-  return {
-    query: (sql: string) => {
-      // eslint-disable-next-line no-console
-      console.log(`[DB Query]: ${sql}`);
-      return Promise.resolve([{ id: 1, result: "mock result" }]);
-    },
-    disconnect: () => {
-      // eslint-disable-next-line no-console
-      console.log(`[System] Database Disconnected.`);
-      return Promise.resolve();
-    },
+    passwordSalt: ENVIRONMENT.PASSWORD_SALT,
+    dbDriver: ENVIRONMENT.DB_DRIVER,
   };
 };
 
 export const initializeState = async (): Promise<AppState> => {
-  // eslint-disable-next-line no-console
-  console.log("[System] Starting Application Initialization...");
+  log.info("Starting Application Initialization...");
 
   const config = loadConfig();
-  const db = await createDbConnection(config.dbUrl);
+  // Create Pool Connection and client for database
+  const dbClient = new DBSqliteService(config.dbUrl);
+  const db = dbClient.db;
 
   // Freeze the state object to prevent modifications at runtime if desired
   // though TypeScript readonly properties are usually enough for compile time safety
   const state: AppState = {
     config,
     db,
+    dbClient,
   };
 
-  // eslint-disable-next-line no-console
-  console.log("[System] Application State Initialized.");
-  return Object.freeze(state);
+  log.info("Application State Initialized.");
+  return Promise.resolve(Object.freeze(state));
 };

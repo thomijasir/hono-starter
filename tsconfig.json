@@ -1,12 +1,16 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "lib": ["ESNext"],
+    "target": "ESNext",
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "skipLibCheck": true,
-    /* Rule */
-    "module": "esnext",
+    "allowJs": true,
+    "module": "Preserve",
+    "moduleDetection": "force",
     "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    /* Rule */
     "noImplicitAny": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
@@ -25,7 +29,8 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": false,
     "noImplicitOverride": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["src"]
+  "include": ["src", "scripts", "drizzle.config.ts"]
 }

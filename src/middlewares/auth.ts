@@ -1,15 +1,18 @@
-import type { MiddlewareHandler } from "hono";
+import { createMiddleware } from "hono/factory";
 import { jwt } from "hono/jwt";
-import type { Variables } from "~/model";
+import type { AppOpenApi } from "~/models";
+import { errorResponse, Result } from "~/utils";
 
-export const auth: MiddlewareHandler<{ Variables: Variables }> = async (
-  c,
-  next,
-) => {
+export const auth = createMiddleware<AppOpenApi>(async (c, next) => {
   const state = c.var.state;
   const jwtMiddleware = jwt({
     secret: state.config.jwtSecret,
     alg: "HS256",
   });
-  return jwtMiddleware(c, next);
-};
+  const result = await Result.async(jwtMiddleware(c, next));
+
+  if (result.ok) {
+    return result.val;
+  }
+  return errorResponse(c, "unauthorized", 401);
+});
