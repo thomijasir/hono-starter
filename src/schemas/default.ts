@@ -106,6 +106,7 @@ export const conversations = sqliteTable("conversations", {
 export type ConversationModel = InferSelectModel<typeof conversations>;
 
 export const participants = sqliteTable("participants", {
+  id: text("id").primaryKey(),
   conversationId: text("conversation_id")
     .references(() => conversations.id)
     .notNull(),
@@ -134,6 +135,9 @@ export const messages = sqliteTable("messages", {
   content: text("content"), // Text or URL
   metadata: text("metadata", { mode: "json" }), // JSON string for extra data
   createdAt: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updateAt: text("update_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
 });

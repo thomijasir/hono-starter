@@ -1,4 +1,4 @@
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { log } from "~/utils";
 
 export class PushService {

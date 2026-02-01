@@ -1,5 +1,5 @@
 import { ENVIRONMENT } from "~/constants";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { DBSqliteService } from "~/services";
 import { log } from "~/utils";
 

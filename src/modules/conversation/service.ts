@@ -1,35 +1,56 @@
+import type { ConnectSignatureType } from "../chat/model";
 import type {
-  CreateConversationPayload,
-  UpdateConversationPayload,
+  CreateConversationType,
+  RequestCreateConversationType,
+  UpdateConversationType,
 } from "./model";
-import * as Repository from "./repository";
-import type { AppState } from "~/model";
-import { Err } from "~/utils";
+import {
+  deleteConversationById,
+  findAllConversations,
+  findConversationById,
+  saveConversation,
+  saveNewConversation,
+  saveNewConversationWithParticipants,
+} from "./repository";
+import type { AppState } from "~/models";
+import { Err, generateUUID, Ok } from "~/utils";
 
 export const createConversation = async (
   state: AppState,
-  payload: CreateConversationPayload,
+  payload: CreateConversationType,
 ) => {
-  // Business logic validation could go here
-  if (payload.type === "GROUP" && !payload.name) {
-    // It's just a warning or logic, but for now we follow schema which makes name optional.
-    // Maybe enforce name for groups?
-  }
-
-  if (
-    payload.type === "DIRECT" &&
-    payload.participants &&
-    payload.participants.length !== 2
-  ) {
-    // Logic for direct message: exactly 2 participants?
-    // Leaving loose for now as per minimal requirements
-  }
-
-  return await Repository.saveNewConversation(state, payload);
+  return await saveNewConversation(state, payload);
 };
 
 export const getConversation = async (state: AppState, id: string) => {
-  return await Repository.findConversationById(state, id);
+  return await findConversationById(state, id);
+};
+
+export const createConversationWithParticipants = async (
+  state: AppState,
+  payload: RequestCreateConversationType,
+  claim: ConnectSignatureType,
+) => {
+  let conversationType = "DIRECT";
+  if (payload.participants.length > 1) {
+    conversationType = "GROUP";
+  }
+  const id = generateUUID();
+
+  const result = await saveNewConversationWithParticipants(state, {
+    id,
+    appId: claim.appId,
+    type: conversationType,
+    name: payload.name,
+    adminId: claim.externalId,
+    participants: payload.participants,
+  });
+
+  if (!result.ok) {
+    return Err(result.err);
+  }
+
+  return Ok(result.val);
 };
 
 export const listConversations = async (
@@ -37,23 +58,23 @@ export const listConversations = async (
   page: number,
   limit: number,
 ) => {
-  return await Repository.findAllConversations(state, page, limit);
+  return await findAllConversations(state, page, limit);
 };
 
 export const updateConversation = async (
   state: AppState,
   id: string,
-  payload: UpdateConversationPayload,
+  payload: UpdateConversationType,
 ) => {
-  const existing = await Repository.findConversationById(state, id);
+  const existing = await findConversationById(state, id);
   if (!existing.ok) return Err("Conversation not found");
 
-  return await Repository.saveConversation(state, id, payload);
+  return await saveConversation(state, id, payload);
 };
 
 export const removeConversation = async (state: AppState, id: string) => {
-  const existing = await Repository.findConversationById(state, id);
+  const existing = await findConversationById(state, id);
   if (!existing.ok) return Err("Conversation not found");
 
-  return await Repository.deleteConversationById(state, id);
+  return await deleteConversationById(state, id);
 };

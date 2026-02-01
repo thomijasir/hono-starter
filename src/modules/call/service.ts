@@ -1,6 +1,6 @@
 import type { CreateCallType } from "./model";
 import * as Repository from "./repository";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 
 export const initiateCall = async (
   state: AppState,

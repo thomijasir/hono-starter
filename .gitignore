@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 coverage
-drizzle
+drizzle/
 public/uploads
 
 # Editor directories and files

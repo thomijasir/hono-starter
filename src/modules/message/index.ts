@@ -1,8 +1,8 @@
 import { z } from "zod";
-import * as controller from "./controller";
+import { listMessages, createMessage, updateMessage } from "./controller";
 import {
-  CreateMessageSchema,
   MessageSchema,
+  RequestCreateMessageSchema,
   UpdateMessageSchema,
 } from "./model";
 import { auth } from "~/middlewares";
@@ -24,18 +24,17 @@ export const messageRoutes = () => {
         method: "post",
         path: "/",
         middleware: [auth] as const,
-        request: jsonRequest(CreateMessageSchema),
+        request: jsonRequest(RequestCreateMessageSchema),
         responses: createResponses(messageResponseSchema, "Send message", 201),
         tags: ["Message"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
-      controller.sendMessage,
+      createMessage,
     )
     .openapi(
       createRoute({
         method: "get",
         path: "/conversation/{conversationId}",
-        middleware: [auth] as const,
         request: {
           params: z.object({ conversationId: z.string() }),
           query: z.object({
@@ -51,7 +50,7 @@ export const messageRoutes = () => {
         tags: ["Message"],
         security: [{ Bearer: [] }],
       }),
-      controller.listMessages,
+      listMessages,
     )
     .openapi(
       createRoute({
@@ -73,6 +72,6 @@ export const messageRoutes = () => {
         tags: ["Message"],
         security: [{ Bearer: [] }],
       }),
-      controller.updateMessage,
+      updateMessage,
     );
 };

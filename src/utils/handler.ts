@@ -1,6 +1,6 @@
 import type { Context, Handler, Env } from "hono";
 import { httpResponse, errorResponse } from "./response";
-import type { ContentfulStatusCode, Variables, PaginationMeta } from "~/model";
+import type { ContentfulStatusCode, Variables, PaginationMeta } from "~/models";
 
 /**
  * Interface representing the context provided to a request handler.

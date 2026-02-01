@@ -1,11 +1,9 @@
-import { eq, sql } from "drizzle-orm";
-import type {
-  CreateConversationPayload,
-  UpdateConversationPayload,
-} from "./model";
-import type { AppState } from "~/model";
+import { eq, sql, and } from "drizzle-orm";
+import { CreateConversationSchema } from "./model";
+import type { CreateConversationType, UpdateConversationType } from "./model";
+import type { AppState } from "~/models";
 import { conversations, participants } from "~/schemas/default";
-import { Err, Ok, Result } from "~/utils";
+import { Err, generateUUID, Ok, Result } from "~/utils";
 
 export const findConversationById = async (state: AppState, id: string) => {
   const result = await Result.async(
@@ -21,6 +19,48 @@ export const findConversationById = async (state: AppState, id: string) => {
   }
 
   return Ok(result.val[0]);
+};
+
+export const findUsersConversation = async (
+  state: AppState,
+  page: number = 1,
+  limit: number = 10,
+  payload: { appId: string; userId: string },
+) => {
+  const { db } = state;
+  const offset = (page - 1) * limit;
+  const result = await Result.async(
+    db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.appId, payload.appId),
+          eq(conversations.adminId, payload.userId),
+        ),
+      )
+      .limit(limit)
+      .offset(offset),
+  );
+
+  if (!result.ok) {
+    return Err(result.err);
+  }
+
+  const total = await Result.async(
+    state.db
+      .select({ count: sql<number>`count(*)` })
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.appId, payload.appId),
+          eq(conversations.adminId, payload.userId),
+        ),
+      ),
+  );
+  const totalCount = total.ok && total.val[0] ? total.val[0].count : 0;
+
+  return Ok({ conversations: result.val, total: totalCount });
 };
 
 export const findAllConversations = async (
@@ -48,50 +88,101 @@ export const findAllConversations = async (
 
 export const saveNewConversation = async (
   state: AppState,
-  payload: CreateConversationPayload,
+  payload: CreateConversationType,
 ) => {
-  const { participants: participantIds, ...conversationData } = payload;
+  const { db } = state;
+  const checkPayload = CreateConversationSchema.safeParse(payload);
 
-  // Generate ID explicitly since we are using text primary key for conversations
-  const id = crypto.randomUUID();
+  // Step 1. Check Payload Before Insert
+  if (checkPayload.error) {
+    return Err(checkPayload.error);
+  }
 
-  // Transaction to create conversation and add participants
-  const transactionResult = await Result.async(
-    state.db.transaction(async (tx) => {
+  // Step 2. Create conversation
+  const result = await Result.async(
+    db.insert(conversations).values(checkPayload.data).returning(),
+  );
+
+  if (!result.ok) {
+    return Err(result.err);
+  }
+
+  const createdConversation = result.val[0];
+
+  if (!createdConversation) {
+    return Err("error create user");
+  }
+
+  // Step 3. Return what we insert
+  return Ok(createdConversation);
+};
+
+export const saveNewConversationWithParticipants = async (
+  state: AppState,
+  payload: CreateConversationType,
+) => {
+  const { db } = state;
+  const checkPayload = CreateConversationSchema.safeParse(payload);
+
+  // Step 1. Check Payload Before Insert
+  if (checkPayload.error) {
+    return Err(checkPayload.error);
+  }
+
+  // Step 2. Create conversation
+  const result = await Result.async(
+    db.transaction(async (tx) => {
+      const { data } = checkPayload;
+      // 1. Create Conversation
       const [newConversation] = await tx
         .insert(conversations)
-        .values({ ...conversationData, id })
+        .values({
+          id: data.id,
+          name: data.name,
+          appId: data.appId,
+          type: data.type,
+          adminId: data.adminId,
+        })
         .returning();
 
-      if (participantIds && participantIds.length > 0 && newConversation) {
-        await tx.insert(participants).values(
-          participantIds.map((userId) => ({
-            conversationId: newConversation.id,
-            userId,
-          })),
-        );
+      if (!newConversation) {
+        tx.rollback();
+        // failure to create conversation
+        return;
       }
 
-      if (!newConversation) return undefined;
+      // 2. create batch participants
+      const participantRows = data.participants.map((userId) => ({
+        id: generateUUID(),
+        conversationId: newConversation.id,
+        userId: userId,
+      }));
+
+      // 3. batch insert participants
+      if (participantRows.length > 0) {
+        await tx.insert(participants).values(participantRows);
+      }
+
       return newConversation;
     }),
   );
 
-  if (!transactionResult.ok) {
-    return Err(transactionResult.err);
+  if (!result.ok) {
+    return Err(result.err);
   }
 
-  if (!transactionResult.val) {
-    return Err("Failed to create conversation");
+  if (!result.val) {
+    return Err("failure conversation");
   }
 
-  return Ok(transactionResult.val);
+  // Step 3. Return what we insert
+  return Ok(result.val);
 };
 
 export const saveConversation = async (
   state: AppState,
   id: string,
-  payload: UpdateConversationPayload,
+  payload: UpdateConversationType,
 ) => {
   const result = await Result.async(
     state.db

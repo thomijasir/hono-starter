@@ -1,13 +1,26 @@
 import { z } from "zod";
 import type { MessagesModel } from "~/schemas/default";
 
+export const RequestCreateMessageSchema = z.object({
+  conversationId: z.string(),
+  type: z.enum(["TEXT", "IMAGE", "DOCUMENT", "AUDIO", "CALL"]),
+  content: z.string().optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+
+export type RequestCreateMessageType = z.infer<
+  typeof RequestCreateMessageSchema
+>;
+
 export const CreateMessageSchema = z.object({
+  id: z.string(),
   conversationId: z.string(),
   senderId: z.string(), // In real app, this might come from auth context, but schema allows validaton
   type: z.enum(["TEXT", "IMAGE", "DOCUMENT", "AUDIO", "CALL"]),
   content: z.string().optional(),
   metadata: z.record(z.string(), z.any()).optional(),
 });
+export type CreateMessageType = z.infer<typeof CreateMessageSchema>;
 
 export const UpdateMessageSchema = z.object({
   content: z.string().optional(),
@@ -22,8 +35,8 @@ export const MessageSchema = z.object({
   content: z.string().nullable(),
   metadata: z.record(z.string(), z.any()).nullable(),
   createdAt: z.string(),
+  updatedAt: z.string(),
 });
 
-export type CreateMessageType = z.infer<typeof CreateMessageSchema>;
 export type UpdateMessageType = z.infer<typeof UpdateMessageSchema>;
 export type Message = MessagesModel;

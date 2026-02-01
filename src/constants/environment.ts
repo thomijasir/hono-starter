@@ -3,7 +3,7 @@ import { z } from "zod";
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "staging", "production"]),
-  PORT: z.coerce.number().default(3099),
+  PORT: z.coerce.number().default(3080),
   DB_URL: z.string().default("sqlite.db"),
   DB_DRIVER: z.enum(["SQLITE", "PGSQL", "MYSQL"]).default("SQLITE"),
   JWT_SECRET: z.string().default("hono-secret-starter-pack"),

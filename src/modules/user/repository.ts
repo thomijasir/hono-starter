@@ -1,6 +1,6 @@
 import { eq, like } from "drizzle-orm";
 import type { CreateUserType } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { users } from "~/schemas/default";
 import type { UsersModel } from "~/schemas/default";
 import { Err, generateUUID, Ok, Result } from "~/utils";

@@ -1,19 +1,17 @@
 import { and, desc, eq, gt, inArray, sql } from "drizzle-orm";
-// alias removed
 import type { SQL } from "drizzle-orm";
 import type { CreateConversationPayload, SendMessagePayload } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import {
-  call,
-  chatUser,
-  conversation,
-  message,
-  participant,
+  calls,
+  chatUsers,
+  conversations,
+  messages,
+  participants,
 } from "~/schemas/default";
 import { generateLiveKitToken } from "~/utils";
 
 // --- Conversation Management ---
-
 export const createConversation = (
   { db }: AppState,
   payload: CreateConversationPayload,
@@ -31,7 +29,7 @@ export const createConversation = (
 
   // Create Conversation
   const [convo] = db
-    .insert(conversation)
+    .insert(conversations)
     .values({
       id: conversationId,
       appId,
@@ -52,7 +50,7 @@ export const createConversation = (
   const uniqueIds = [...new Set(participantIds)];
 
   if (uniqueIds.length > 0) {
-    db.insert(participant)
+    db.insert(participants)
       .values(
         uniqueIds.map((uid) => ({
           conversationId,
@@ -85,8 +83,8 @@ export const getConversations = (
   // Let's rely on basic fetch first to ensure types work
   const myParticipations = db
     .select()
-    .from(participant)
-    .where(eq(participant.userId, userKey))
+    .from(participants)
+    .where(eq(participants.userId, userKey))
     .all();
 
   const convoIds = myParticipations.map((p) => p.conversationId);
@@ -96,9 +94,9 @@ export const getConversations = (
   // Fetch conversation details
   const convos = db
     .select()
-    .from(conversation)
-    .where(inArray(conversation.id, convoIds))
-    .orderBy(desc(conversation.updatedAt))
+    .from(conversations)
+    .where(inArray(conversations.id, convoIds))
+    .orderBy(desc(conversations.updatedAt))
     .all();
 
   // Naive n+1 for last message and unread count (for speed of dev now, optimize later)
@@ -106,9 +104,9 @@ export const getConversations = (
   const results = convos.map((c) => {
     const [lastMsg] = db
       .select()
-      .from(message)
-      .where(eq(message.conversationId, c.id))
-      .orderBy(desc(message.createdAt))
+      .from(messages)
+      .where(eq(messages.conversationId, c.id))
+      .orderBy(desc(messages.createdAt))
       .limit(1)
       .all();
 
@@ -117,9 +115,12 @@ export const getConversations = (
 
     const [unread] = db
       .select({ count: sql<number>`count(*)` })
-      .from(message)
+      .from(messages)
       .where(
-        and(eq(message.conversationId, c.id), gt(message.createdAt, lastRead)),
+        and(
+          eq(messages.conversationId, c.id),
+          gt(messages.createdAt, lastRead),
+        ),
       )
       .all();
 
@@ -133,7 +134,7 @@ export const getConversations = (
   return results;
 };
 
-// --- Message Management ---
+// --- messages Management ---
 
 export const sendMessage = async (
   state: AppState,
@@ -149,7 +150,7 @@ export const sendMessage = async (
   const now = new Date().toISOString();
 
   const [msgDate] = db
-    .insert(message)
+    .insert(messages)
     .values({
       id: messageId,
       conversationId,
@@ -196,7 +197,7 @@ export const sendMessage = async (
         pushService.send(
           u.deviceToken,
           u.deviceType,
-          "New Message",
+          "New messages",
           payload.content ?? "Sent an attachment",
           { conversationId },
         );
@@ -204,7 +205,7 @@ export const sendMessage = async (
     });
   } // Closing IF block
 
-  return message;
+  return messages;
 };
 
 export const getMessages = (
@@ -216,7 +217,7 @@ export const getMessages = (
   const { db } = state;
 
   // Basic cursor pagination using createdAt or ID
-  // If cursor is provided (messageID), we look for message older than that (assuming desc order)
+  // If cursor is provided (messageID), we look for messages older than that (assuming desc order)
   let whereClause: SQL | undefined = eq(message.conversationId, conversationId);
 
   if (cursor) {

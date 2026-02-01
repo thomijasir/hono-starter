@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { CreateAppClientType, UpdateAppClientType } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import type { AppClientsModel } from "~/schemas/default";
 import { appClients } from "~/schemas/default";
 import type { ResultType } from "~/utils";

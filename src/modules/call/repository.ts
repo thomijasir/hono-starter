@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { CreateCallType, UpdateCallType } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { calls } from "~/schemas/default";
 import { Err, Ok, Result } from "~/utils";
 

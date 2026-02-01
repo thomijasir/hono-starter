@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "2531bd0a-f2a6-43d4-9d8a-afa567934cfb",
+  "id": "1a781299-6bab-4801-b44d-d9d8a76b3b8a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "app_clients": {
@@ -453,6 +453,13 @@
     "participants": {
       "name": "participants",
       "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
         "conversation_id": {
           "name": "conversation_id",
           "type": "text",

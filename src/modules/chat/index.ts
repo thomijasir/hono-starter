@@ -1,7 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { connect } from "./controller";
 import { ConnectSchema } from "./model";
-import { validator } from "~/middlewares";
 import {
   createResponses,
   createRoute,

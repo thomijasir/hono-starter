@@ -1,22 +1,25 @@
-import type { CreateMessageType, UpdateMessageType, Message } from "./model";
+import type { ConnectSignatureType } from "../chat/model";
+import type {
+  CreateMessageType,
+  Message,
+  RequestCreateMessageType,
+} from "./model";
 import * as service from "./service";
 import { createJsonHandler, createHandler } from "~/utils";
 
-export const sendMessage = createJsonHandler<CreateMessageType, Message>(
-  async ({ body, state, httpResponse, errorResponse }) => {
-    const result = await service.sendMessage(state, body);
+export const createMessage = createJsonHandler<
+  RequestCreateMessageType,
+  Message,
+  ConnectSignatureType
+>(async ({ body, claim, state, httpResponse, errorResponse }) => {
+  const result = await service.sendMessage(state, claim, body);
 
-    if (!result.ok) {
-      return errorResponse(result.err);
-    }
+  if (!result.ok) {
+    return errorResponse(result.err);
+  }
 
-    if (!result.val) {
-      return errorResponse("Failed to send message", 500);
-    }
-
-    return httpResponse(result.val, "Message sent successfully", 201);
-  },
-);
+  return httpResponse(result.val, "Message sent successfully", 201);
+});
 
 export const listMessages = createHandler(
   async ({ params, query, state, httpResponse, errorResponse }) => {
@@ -45,5 +48,16 @@ export const listMessages = createHandler(
       total,
       totalPages: Math.ceil(total / limit),
     });
+  },
+);
+
+export const updateMessage = createJsonHandler<CreateMessageType, object>(
+  ({ httpResponse }) => {
+    // TODO: new feature for update message
+    return httpResponse(
+      { todo: "feature will develop" },
+      "update message",
+      200,
+    );
   },
 );

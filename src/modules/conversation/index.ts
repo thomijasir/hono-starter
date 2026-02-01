@@ -2,7 +2,7 @@ import { z } from "zod";
 import * as controller from "./controller";
 import {
   ConversationSchema,
-  CreateConversationSchema,
+  RequestCreateConversationSchema,
   UpdateConversationSchema,
 } from "./model";
 import { auth } from "~/middlewares";
@@ -38,7 +38,7 @@ export const conversationRoutes = () => {
           200,
         ),
         tags: ["Conversation"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
       controller.getAllConversations,
     )
@@ -61,7 +61,7 @@ export const conversationRoutes = () => {
           },
         ),
         tags: ["Conversation"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
       controller.getConversation,
     )
@@ -70,14 +70,14 @@ export const conversationRoutes = () => {
         method: "post",
         path: "/",
         middleware: [auth] as const,
-        request: jsonRequest(CreateConversationSchema),
+        request: jsonRequest(RequestCreateConversationSchema),
         responses: createResponses(
           conversationResponseSchema,
           "Create conversation",
           201,
         ),
         tags: ["Conversation"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
       controller.createConversation,
     )
@@ -101,7 +101,7 @@ export const conversationRoutes = () => {
           },
         ),
         tags: ["Conversation"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
       controller.updateConversation,
     )
@@ -124,7 +124,7 @@ export const conversationRoutes = () => {
           },
         ),
         tags: ["Conversation"],
-        security: [{ Bearer: [] }],
+        security: [{ ChatBearer: [] }],
       }),
       controller.deleteConversation,
     );

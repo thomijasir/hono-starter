@@ -1,5 +1,5 @@
 import { eq, desc, like, and } from "drizzle-orm";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { attachments } from "~/schemas/default";
 import { Ok, Err, Result } from "~/utils";
 

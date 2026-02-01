@@ -1,7 +1,7 @@
 import { z } from "@hono/zod-openapi";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { ApiResponse, ErrorApiResponse, PaginationMeta } from "~/model";
+import type { ApiResponse, ErrorApiResponse, PaginationMeta } from "~/models";
 
 /**
  * Standardized Success Response Schema Factory

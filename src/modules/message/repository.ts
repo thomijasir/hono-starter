@@ -1,6 +1,6 @@
 import { eq, sql } from "drizzle-orm";
 import type { CreateMessageType } from "./model";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import { messages } from "~/schemas/default";
 import { Err, Ok, Result } from "~/utils";
 
@@ -58,19 +58,20 @@ export const saveNewMessage = async (
   state: AppState,
   payload: CreateMessageType,
 ) => {
-  const id = crypto.randomUUID();
   const result = await Result.async(
-    state.db
-      .insert(messages)
-      .values({ ...payload, id })
-      .returning(),
+    state.db.insert(messages).values(payload).returning(),
   );
 
   if (!result.ok) {
     return Err(result.err);
   }
 
-  return Ok(result.val[0]);
+  const newMessage = result.val[0];
+  if (!newMessage) {
+    return Err("message not created");
+  }
+
+  return Ok(newMessage);
 };
 
 export const updateMessage = async (

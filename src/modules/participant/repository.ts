@@ -1,24 +1,22 @@
 import { eq, and } from "drizzle-orm";
-import type { AddParticipantType, UpdateParticipantType } from "./model";
-import type { AppState } from "~/model";
+import type { CreateParticipantSchema, UpdateParticipantType } from "./model";
+import type { AppState } from "~/models";
 import type { ParticipantsModel } from "~/schemas/default";
 import { participants } from "~/schemas/default";
 import type { ResultType } from "~/utils";
-import { Err, Ok, Result, nowDate } from "~/utils";
+import { Err, Ok, Result, generateUUID } from "~/utils";
 
 export const addParticipant = async (
   state: AppState,
-  payload: AddParticipantType,
+  payload: CreateParticipantSchema,
 ): Promise<ResultType<ParticipantsModel, string>> => {
   const { db } = state;
+  const createNewParticipant = {
+    id: generateUUID(),
+    ...payload,
+  };
   const result = await Result.async(
-    db
-      .insert(participants)
-      .values({
-        ...payload,
-        joinedAt: nowDate(),
-      })
-      .returning(),
+    db.insert(participants).values(createNewParticipant).returning(),
   );
 
   if (!result.ok) {

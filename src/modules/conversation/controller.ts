@@ -1,7 +1,8 @@
+import type { ConnectSignatureType } from "../chat/model";
 import type {
-  Conversation,
-  CreateConversationPayload,
-  UpdateConversationPayload,
+  ConversationType,
+  RequestCreateConversationType,
+  UpdateConversationType,
 } from "./model";
 import * as service from "./service";
 import { createHandler, createJsonHandler } from "~/utils";
@@ -47,25 +48,27 @@ export const getConversation = createHandler(
 );
 
 export const createConversation = createJsonHandler<
-  CreateConversationPayload,
-  Conversation
->(async ({ body, state, httpResponse, errorResponse }) => {
-  const result = await service.createConversation(state, body);
+  RequestCreateConversationType,
+  ConversationType,
+  ConnectSignatureType
+>(async ({ claim, body, state, httpResponse, errorResponse }) => {
+  // TODO: for enhancement before create the conversation we have to check is user available in chat_user table or not if yes then proceed
+  const result = await service.createConversationWithParticipants(
+    state,
+    body,
+    claim,
+  );
 
   if (!result.ok) {
     return errorResponse(result.err);
   }
 
-  return httpResponse(
-    result.val as Conversation,
-    "Conversation created successfully",
-    201,
-  );
+  return httpResponse(result.val, "Conversation created successfully", 201);
 });
 
 export const updateConversation = createJsonHandler<
-  UpdateConversationPayload,
-  Conversation
+  UpdateConversationType,
+  ConversationType
 >(async ({ params, body, state, httpResponse, errorResponse }) => {
   const id = params.id;
   if (!id) return errorResponse("ID is required", 400);
@@ -77,7 +80,7 @@ export const updateConversation = createJsonHandler<
   }
 
   return httpResponse(
-    result.val as Conversation,
+    result.val as ConversationType,
     "Conversation updated successfully",
   );
 });

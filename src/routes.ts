@@ -5,7 +5,7 @@ import { requestId } from "hono/request-id";
 import path from "node:path";
 import packageJSON from "../package.json" with { type: "json" };
 import { logger } from "~/middlewares";
-import type { AppState } from "~/model";
+import type { AppState } from "~/models";
 import {
   authRoutes,
   postRoutes,
@@ -91,6 +91,7 @@ export const createApp = (state: AppState) => {
     info: {
       version: packageJSON.version,
       title: "Hono Starter API",
+
       description:
         "This starter pack was built with a singular mission: to enforce Rust-grade security and strictness within the TypeScript ecosystem",
       contact: {
@@ -99,6 +100,16 @@ export const createApp = (state: AppState) => {
         url: "https://github.com/thomijasir",
       },
     },
+    servers: [
+      {
+        url: "http://localhost:3099",
+        description: "Development environment",
+      },
+      {
+        url: "https://api.yourproduction.com",
+        description: "Production environment",
+      },
+    ],
   });
 
   // Scalar UI API Configuration
