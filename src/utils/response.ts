@@ -46,7 +46,7 @@ export const jsonErrorResponseSchema = () =>
 /**
  * Standardized Success Response
  */
-export const httpResponse = <T,>(
+export const httpResponse = <T>(
   ctx: Context,
   data: T,
   message: string = "Success",
