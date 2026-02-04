@@ -78,7 +78,7 @@ bun run start
 src/
 ├── constants/          # Application constants (Env, Configs)
 ├── middlewares/        # Global middlewares (Auth, Logger, etc.)
-├── model/              # Global models & types (AppState, Response)
+├── models/              # Global models & types (AppState, Response)
 ├── modules/            # Feature modules (Domain Driven Design)
 ├── schema/             # Shared Zod schemas
 ├── services/           # Global services (Database, WebSocket)
