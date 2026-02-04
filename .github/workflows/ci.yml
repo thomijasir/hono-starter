@@ -8,27 +8,18 @@ on:
 
 jobs:
   # In GitHub Actions, we combine "prepare" and "check" for efficiency
-  setup-and-check:
+  check:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # GitHub Actions' official Bun setup handles caching automatically,
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
-
-      # GitHub Actions' official Bun setup handles caching automatically,
-      # but if you want manual control like your GitLab setup:
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
-          restore-keys: |
-            ${{ runner.os }}-bun-
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
