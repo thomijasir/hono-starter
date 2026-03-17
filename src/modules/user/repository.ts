@@ -5,6 +5,7 @@ import { users } from "~/schemas/default";
 import type { UsersModel } from "~/schemas/default";
 import { Err, generateUUID, Ok, Result } from "~/utils";
 import type { ResultType } from "~/utils";
+import { ERR301, ERR302 } from "~/errors";
 
 /**
  * Finds a user by their email address.
@@ -26,7 +27,7 @@ export const findUserByEmail = async (
   }
   const foundUser = userResult.val[0];
   if (!foundUser) {
-    return Err("users not found");
+    return Err(ERR302);
   }
   return Ok(foundUser);
 };
@@ -48,7 +49,7 @@ export const findUserByID = async (state: AppState, id: string) => {
   }
   const foundUser = userResult.val[0];
   if (!foundUser) {
-    return Err("users not found");
+    return Err(ERR302);
   }
   return Ok(foundUser);
 };
@@ -69,11 +70,11 @@ export const findUserByName = async (state: AppState, name: string) => {
       .where(like(users.name, `%${name}%`)),
   );
   if (!userResult.ok) {
-    return Err("database error");
+    return Err(ERR301);
   }
   const foundUsers = userResult.val;
   if (foundUsers.length === 0) {
-    return Err("users not found");
+    return Err(ERR302);
   }
   return Ok(foundUsers);
 };
@@ -90,11 +91,11 @@ export const saveNewUser = async (
       .returning(),
   );
   if (!result.ok) {
-    return Err("failed insert users");
+    return Err(ERR301);
   }
   const createdUser = result.val[0];
   if (!createdUser) {
-    return Err("users not found");
+    return Err(ERR302);
   }
   return Ok(createdUser);
 };
@@ -113,11 +114,11 @@ export const saveUser = async (
     db.update(users).set(changeSet).where(eq(users.id, id)).returning(),
   );
   if (!result.ok) {
-    return Err("failed update users");
+    return Err(ERR301);
   }
   const updatedUser = result.val[0];
   if (!updatedUser) {
-    return Err("failed update users");
+    return Err(ERR302);
   }
   return Ok(updatedUser);
 };
@@ -128,7 +129,7 @@ export const findAllUsers = async (
   const { db } = state;
   const result = await Result.async(db.select().from(users));
   if (!result.ok) {
-    return Err("database error");
+    return Err(ERR301);
   }
   return Ok(result.val);
 };

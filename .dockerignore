@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+*.local
+coverage
+.env
+.env.*
+sqlite.db
+.codegraph
+.git
+public/uploads
+*.log

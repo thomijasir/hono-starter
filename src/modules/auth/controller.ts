@@ -11,6 +11,7 @@ import {
   Ok,
   Err,
 } from "~/utils";
+import { ERR103, ERR104, ERR401 } from "~/errors";
 
 // Pipe handle method (recommend for simple operation and most cases)
 export const login = createJsonHandler<LoginType, AuthResponseType>(
@@ -21,7 +22,7 @@ export const login = createJsonHandler<LoginType, AuthResponseType>(
       async (user: UsersModel) => {
         const matchResult = await verifyPassword(body.password, user.password);
         if (!matchResult.ok || !matchResult.val) {
-          return Err("invalid email or password");
+          return Err(ERR103);
         }
         return Ok(user);
       },
@@ -41,12 +42,12 @@ export const register = createJsonHandler<RegisterType, AuthResponseType>(
   async ({ body, state, httpResponse, errorResponse }) => {
     const userResult = await findUserByEmail(state, body.email);
     if (userResult.ok) {
-      return errorResponse("user already exist");
+      return errorResponse(ERR104);
     }
 
     const createPassword = await passwordHash(body.password);
     if (!createPassword.ok) {
-      return errorResponse("failed hashing password");
+      return errorResponse(ERR401);
     }
 
     const resultCreateUser = await saveNewUser(state, {

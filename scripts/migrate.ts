@@ -5,7 +5,7 @@ import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 const runMigrate = () => {
   console.log("⏳ Running migrations...");
 
-  const sqlite = new Database("sqlite.db");
+  const sqlite = new Database(process.env.DB_URL ?? "sqlite.db");
   const db = drizzle(sqlite);
 
   try {

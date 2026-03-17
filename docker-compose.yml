@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3099:3099"
+    volumes:
+      - sqlite_data:/app/data
+    environment:
+      NODE_ENV: production
+      PORT: 3099
+      DB_DRIVER: SQLITE
+      DB_URL: data/sqlite.db
+      USE_HTTPS: "false"
+      JWT_SECRET: ${JWT_SECRET:-hono-secret-starter-pack}
+      PASSWORD_SALT: ${PASSWORD_SALT:-salt}
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
