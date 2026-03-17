@@ -1,11 +1,11 @@
 import { eq, like } from "drizzle-orm";
 import type { CreateUserType } from "./model";
+import { ERR301, ERR302 } from "~/errors";
 import type { AppState } from "~/models";
 import { users } from "~/schemas/default";
 import type { UsersModel } from "~/schemas/default";
 import { Err, generateUUID, Ok, Result } from "~/utils";
 import type { ResultType } from "~/utils";
-import { ERR301, ERR302 } from "~/errors";
 
 /**
  * Finds a user by their email address.

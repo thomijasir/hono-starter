@@ -1,8 +1,8 @@
 import { sign } from "hono/jwt";
 import type { UserType } from "../user/model";
 import { EXPIRED_TOKEN } from "~/constants";
-import { Err, Ok, Result } from "~/utils";
 import { ERR402 } from "~/errors";
+import { Err, Ok, Result } from "~/utils";
 
 export const signToken = async (payload: UserType, secret: string) => {
   const now = Math.floor(Date.now() / 1000);

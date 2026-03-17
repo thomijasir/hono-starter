@@ -1,6 +1,7 @@
 import { findUserByEmail, saveNewUser } from "../user/repository";
 import type { LoginType, RegisterType, AuthResponseType } from "./model";
 import { signToken } from "./service";
+import { ERR103, ERR104, ERR401 } from "~/errors";
 import type { UsersModel } from "~/schemas/default";
 import {
   createJsonHandler,
@@ -11,7 +12,6 @@ import {
   Ok,
   Err,
 } from "~/utils";
-import { ERR103, ERR104, ERR401 } from "~/errors";
 
 // Pipe handle method (recommend for simple operation and most cases)
 export const login = createJsonHandler<LoginType, AuthResponseType>(
